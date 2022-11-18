@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>樱花外卖</title>
+  <script src="js/jquery-3.6.1.js"></script>
+  <script src="js/oneline.js"></script>
+  <style>
+    * {
+      margin: 0px;
+      padding: 0px;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      flex: 0 1 auto;
+      font-size: 2em;
+      background-color: aliceblue;
+    }
+
+    .column {
+      width: 100%;
+      flex: 1 1 auto;
+      background-color: aliceblue;
+      background-image: url(res/paddle.jpg);
+      background-size: 100%, 100%;
+    }
+
+    .float {
+      float: left;
+    }
+
+    .float_right {
+      float: right;
+    }
+
+    /*
+    .column.left {
+      width: 100%;
+      background-color: aliceblue;
+    }
+
+    .column.right {
+      width: 50%;
+      background-color: bisque;
+    }
+*/
+    .bottom {
+      flex: 0 1 auto;
+      width: 100%;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .source {
+      padding-left: 40%;
+    }
+
+    .bottom {
+      font-size: 2em;
+      font-family: KaiTi;
+      background-color: aliceblue;
+    }
+
+    #signin {
+      font-size: 1em;
+    }
+    #signup{
+      font-size: 0.7em;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <p class="float" id="signin"><a href="login.html">登录</a></p>
+    <div class="float_right" id="signup">
+      <p><a href="">顾客注册</a></p>
+      <p><a href="">商家注册</a></p>
+      <p><a href="">骑手注册</a></p>
+    </div>
+    <p class="center">欢迎来到樱花外卖！</p>
+    <p class="center">请先登录或注册</p>
+
+  </div>
+  <div class="column">
+  </div>
+
+  <div class="bottom">
+    <p class="center" id="hitokoto_text"></p>
+    <p class="center source" id="hitokoto_source"></p>
+  </div>
+</body>
+
+</html>
