@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/jquery-3.6.1.js"></script>
+  <script src="js/oneline.js"></script>
+  <script>
+    $(function () {
+      $("input[value='customer'").get(0).checked = true;
+      $("input[type='text']").on("input", function () {
+        if (this.validity.patternMismatch) {
+          this.setCustomValidity("用户名由中文, 英文, 数字, 下划线, 井号组成, 长度在3-20之间")
+        } else {
+          this.setCustomValidity("")
+        }
+      })
+      $("input[type='password']").on("input", function () {
+        if (this.validity.patternMismatch) {
+          this.setCustomValidity("密码由英文, 数字组成, 长度在6到20之间")
+        } else {
+          this.setCustomValidity("")
+        }
+      })
+    })
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 10px;
+    }
+
+    html::before {
+      content: '';
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      z-index: -1;
+      /*background: linear-gradient(120deg, #0d0d15 0%, #8ec5fc 100%) no-repeat;*/
+      background: linear-gradient(120deg, #0d0d15 0%, #a19d7c 100%) no-repeat;
+
+    }
+
+    ::selection {
+      color: #fff;
+      background-color: rgb(144, 129, 241);
+    }
+
+    .header {
+      height: 60%;
+      width: 100%;
+    }
+
+    .bottom {
+      font-family: KaiTi;
+      font-size: 4rem;
+      color: #26292e;
+      height: 20%;
+    }
+
+    .box {
+      display: flex;
+      overflow: hidden;
+      width: 90rem;
+      height: 50rem;
+      background-color: rgba(255, 255, 255, 60%);
+      border-radius: 1.5rem;
+      margin: 8% auto;
+      box-shadow: 0 0 1rem 0.2rem rgb(0 0 0 / 10%);
+    }
+
+    .box .left {
+      position: relative;
+      width: 35%;
+      height: 100%;
+      background-color: skyblue;
+    }
+
+    .box .left::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: url(res/maid.jpg);
+      background-size: cover;
+      opacity: 80%;
+    }
+
+    .box .right {
+      display: flex;
+      width: 65%;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .box .right h4 {
+      color: #8c93a2;
+      font-size: 3rem;
+      margin-top: 5rem;
+    }
+
+    .box .right form {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .box .right form .acc {
+      outline: none;
+      width: 80%;
+      height: 5rem;
+      font-size: 1.6rem;
+      margin-top: 2rem;
+      padding: 1rem 0 0 1.6rem;
+      border: none;
+      border-bottom: 1px solid #7f8798;
+      color: #7f8798;
+      background-color: rgba(0, 0, 0, 0);
+    }
+
+    /*.right form .acc:focus {
+      outline: none;
+      color: rgb(144, 129, 241);
+      padding: 1rem 0 0 1.6rem;
+    }*/
+
+    .right .submit {
+      width: 60%;
+      height: 5rem;
+      color: #f6f6f6;
+      /*background-image: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);*/
+      background-image: linear-gradient(120deg, #0d0d15 0%, #a19d7c 100%);
+      font-size: 1.4rem;
+      border: none;
+      border-radius: 0.5rem;
+      margin: 6rem 0 0 50%;
+      transform: translateX(-50%);
+    }
+
+    .right .submit:hover {
+      box-shadow: 0 0 2rem -0.5rem rgb(0 0 0 / 15%);
+    }
+
+    .right .fn {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+      width: 70%;
+    }
+
+    .right .fn a {
+      font-size: 1.3rem;
+      margin-top: 5rem;
+      padding: 1rem 2rem;
+      color: #666;
+    }
+
+    .right .fn a:hover {
+      color: rgb(144, 129, 241);
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .source {
+      padding-left: 40%;
+    }
+
+    label {
+      padding-right: 40px;
+      margin-top: 3rem;
+      font-size: 1.6rem;
+      color: #666c7a;
+    }
+  </style>
+  <title>登录</title>
+</head>
+
+<body>
+  <div class="header">
+    <div class="box">
+      <div class="left"></div>
+      <div class="right">
+        <h4>登 录</h4>
+        <form action="">  
+          <label for="customer">顾客 <input type="radio" name="identity" value="customer"> </label>
+          <label for="tradesman">店家 <input type="radio" name="identity" value="tradesman"></label>
+          <label for="rider">骑手 <input type="radio" name="identity" value="rider"></label>
+
+          <input class="acc" type="text" name="name" pattern="[(a-zA-Z0-9\u4e00-\u9fa5_#]{3,20}$" placeholder="用户名" required>
+          <input class="acc" type="password" name="password" pattern="[a-zA-Z0-9]{6,20}$" placeholder="密码" required>
+          <input class="submit" type="submit" value="Login">
+        </form>
+        <!--
+      <div class="fn">
+        <a href="javascript:;">注册账号</a>
+        <a href="javascript:;">找回密码</a>
+      </div>
+      -->
+
+      </div>
+    </div>
+  </div>
+  <div class="bottom">
+    <p class="center" id="hitokoto_text"></p>
+    <p class="center source" id="hitokoto_source"></p>
+  </div>
+</body>
+
+</html>

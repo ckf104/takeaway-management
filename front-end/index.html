@@ -25,7 +25,8 @@
     .header {
       flex: 0 1 auto;
       font-size: 2em;
-      background-color: aliceblue;
+      background-image: linear-gradient(120deg, #455c4d 0%, #706f51 100%);
+      opacity: 70%;
     }
 
     .column {
@@ -44,22 +45,6 @@
       float: right;
     }
 
-    /*
-    .column.left {
-      width: 100%;
-      background-color: aliceblue;
-    }
-
-    .column.right {
-      width: 50%;
-      background-color: bisque;
-    }
-*/
-    .bottom {
-      flex: 0 1 auto;
-      width: 100%;
-    }
-
     .center {
       text-align: center;
     }
@@ -69,27 +54,37 @@
     }
 
     .bottom {
+      flex: 0 1 auto;
+      width: 100%;
       font-size: 2em;
       font-family: KaiTi;
-      background-color: aliceblue;
+      background-image: linear-gradient(120deg, #455c4d 0%, #706f51 100%);
+      opacity: 80%;
     }
 
     #signin {
+      padding-top: 20px;
       font-size: 1em;
+      color: aliceblue;
     }
-    #signup{
+
+    #signup {
       font-size: 0.7em;
+    }
+
+    .font_color1 {
+      color: #eae6cd;
     }
   </style>
 </head>
 
 <body>
   <div class="header">
-    <p class="float" id="signin"><a href="login.html">登录</a></p>
+    <h4 class="float" id="signin"><a href="login.html" class="font_color1">登录</a></h4>
     <div class="float_right" id="signup">
-      <p><a href="">顾客注册</a></p>
-      <p><a href="">商家注册</a></p>
-      <p><a href="">骑手注册</a></p>
+      <p><a href="" class="font_color1">顾客注册</a></p>
+      <p><a href="" class="font_color1">商家注册</a></p>
+      <p><a href="" class="font_color1">骑手注册</a></p>
     </div>
     <p class="center">欢迎来到樱花外卖！</p>
     <p class="center">请先登录或注册</p>
