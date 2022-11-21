@@ -1,7 +1,7 @@
 Source code of a takeaway management platform for homework of the database course.
 * front-end: code of html, css, js
-* back-end: ....
+* back-end: code of python flask ?
 
 
-TODO:
-* form action in login.html
+now:
+* have added session support

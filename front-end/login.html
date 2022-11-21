@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="js/jquery-3.6.1.js"></script>
-  <script src="js/oneline.js"></script>
+  <script src="/js/jquery-3.6.1.js"></script>
+  <script src="/js/oneline.js"></script>
   <script>
     $(function () {
       $("input[value='customer'").get(0).checked = true;
@@ -24,7 +24,34 @@
           this.setCustomValidity("")
         }
       })
+
+      $("form").submit(function (e) {
+        e.preventDefault()
+        d = new FormData(this)
+        $('html').css('cursor', 'progress')
+        $.ajax({
+          type: 'POST',
+          url: '/auth/login',
+          data: $("form").serialize(),
+          success: function (data, status) {
+            if (data == 'true' && status == 'success') {
+              //console.log('sucrees')
+              window.location.replace('/user.html')
+            } else if (status != 'success') {
+              alert('与服务器连接发生错误')
+            }
+            else {
+              alert('用户名或密码错误')
+            }
+          },
+          error: function (jqXHR, status, error) {
+            alert('服务器错误, ' + status + ', ' + error)
+          }
+        }).then(() => { })
+        $('html').css('cursor', 'default')
+      })
     })
+
   </script>
   <style>
     * {
@@ -88,7 +115,7 @@
       position: absolute;
       width: 100%;
       height: 100%;
-      background-image: url(res/maid.jpg);
+      background-image: url(/res/maid.jpg);
       background-size: cover;
       opacity: 80%;
     }
@@ -189,13 +216,14 @@
     <div class="box">
       <div class="left"></div>
       <div class="right">
-        <h4>登 录</h4>
-        <form action="">  
+        <h4 onclick="console.log('click login!')">登 录</h4>
+        <form action="">
           <label for="customer">顾客 <input type="radio" name="identity" value="customer"> </label>
           <label for="tradesman">店家 <input type="radio" name="identity" value="tradesman"></label>
           <label for="rider">骑手 <input type="radio" name="identity" value="rider"></label>
 
-          <input class="acc" type="text" name="name" pattern="[(a-zA-Z0-9\u4e00-\u9fa5_#]{3,20}$" placeholder="用户名" required>
+          <input class="acc" type="text" name="name" pattern="[(a-zA-Z0-9\u4e00-\u9fa5_#]{3,20}$" placeholder="用户名"
+            required>
           <input class="acc" type="password" name="password" pattern="[a-zA-Z0-9]{6,20}$" placeholder="密码" required>
           <input class="submit" type="submit" value="Login">
         </form>

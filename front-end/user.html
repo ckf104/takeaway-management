@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}樱花外卖{% endblock%} </title>
+  <script src="js/jquery-3.6.1.js"></script>
+  <script>
+    $(function () {
+      $('#logout').on('click', function () {
+        $('html').css('cursor', 'progress')
+        $.ajax({
+          type: 'POST',
+          url: '/auth/logout',
+          success: function (data, status) {
+            if (data == 'true' && status == 'success') {
+              window.location.replace('/login.html')
+            }
+            else {
+              alert('与服务器连接发生错误')
+            }
+          },
+          error: function (jqXHR, status, error) {
+            alert('服务器错误, ' + status + ', ' + error)
+          }
+        }).then(() => { })
+        $('html').css('cursor', 'default')
+      })
+    })
+
+  </script>
+</head>
+
+<body>
+  <h1>hello {{ session['username'] }}! </h1>
+  <button id="logout">logout</button>
+</body>
+
+</html>
