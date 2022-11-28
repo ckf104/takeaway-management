@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/js/jquery-3.6.1.js"></script>
+  <script src="/js/oneline.js"></script>
+  <title>注册账号</title>
+  <script>
+    $(function () {
+      $("input[value=customer]").prop("checked", true)
+      $("input[value=man]").prop("checked", true)
+      $(":input").prop("disabled", false)
+      $(".current :input").prop("disabled", true)
+
+      $("#identity input[value=customer]").on("click", function () {
+        $("#tradesman").addClass("current")
+        $("#rider").addClass("current")
+        $("#customer").removeClass("current")
+        $(":input").prop("disabled", false)
+        $(".current :input").prop("disabled", true)
+      })
+
+      $("#identity input[value=tradesman]").on("click", function () {
+        $("#customer").addClass("current")
+        $("#rider").addClass("current")
+        $("#tradesman").removeClass("current")
+        $(":input").prop("disabled", false)
+        $(".current :input").prop("disabled", true)
+      })
+
+      $("#identity input[value=rider]").on("click", function () {
+        $("#tradesman").addClass("current")
+        $("#customer").addClass("current")
+        $("#rider").removeClass("current")
+        $(":input").prop("disabled", false)
+        $(".current :input").prop("disabled", true)
+      })
+
+      $("form").submit(function (e) {
+        e.preventDefault()
+        $('html').css('cursor', 'progress')
+
+        $.ajax({
+          type: 'POST',
+          url: '/auth/signup',
+          data: $("form").serialize(),
+          success: function (data, status) {
+            if (data == 'true' && status == 'success') {
+              alert('注册成功，点击确认后跳转至登录界面')
+              window.location.replace('/login.html')
+            } else if (status != 'success') {
+              alert('与服务器连接发生错误')
+            }
+            else {
+              alert(data)
+            }
+          },
+          error: function (jqXHR, status, error) {
+            alert('服务器错误, ' + status + ', ' + error)
+          },
+          complete: function () {
+            $('html').css('cursor', 'default')
+          }
+        })
+
+      })
+    })
+  </script>
+  <style>
+    * {
+      padding: 0px;
+      margin: 0px;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      background: url("res/signup.jpg") no-repeat center center;
+      background-size: 100%;
+    }
+
+    p {
+      margin-bottom: 5px;
+    }
+
+    label {
+      padding-right: 15px;
+    }
+
+    input[type='date'] {
+      font-size: 1.1rem;
+    }
+
+    button {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    #content {
+      position: relative;
+      width: 20%;
+      top: 7%;
+      left: 7%;
+      border: 0.1rem solid #cccccc;
+      border-radius: 0.5rem;
+      background-color: #2e2211;
+      opacity: 60%;
+      color: #d9d6d1;
+    }
+
+
+    .content-header {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .info {
+      font-size: 1.1rem;
+      padding-left: 18%;
+      margin-bottom: 20px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .source {
+      padding-left: 40%;
+    }
+
+    .current {
+      display: none;
+    }
+
+    .bottom {
+      position: absolute;
+      width: 70%;
+      bottom: 0px;
+      font-size: 2rem;
+      margin-left: 30%;
+      /*color: #add3e3;*/
+      color: aqua;
+    }
+  </style>
+</head>
+
+<body>
+  <section id="content">
+    <div class="content-header">
+      <p>用户注册</p>
+    </div>
+
+    <div class="content-body">
+      <form action="">
+        <div class="info" id="identity">
+          <p>注册身份</p>
+          <label>顾客 <input type="radio" name="identity" value="customer"> </label>
+          <label>店家 <input type="radio" name="identity" value="tradesman"></label>
+          <label>骑手 <input type="radio" name="identity" value="rider"></label>
+        </div>
+
+        <div class="info">
+          <p>登录用户名</p>
+          <input type="text" name="name" pattern="[(a-zA-Z0-9\u4e00-\u9fa5_#]{3,20}$"
+            placeholder="由中文, 英文, 数字, 下划线, 井号组成, 长度在3-20之间" required>
+        </div>
+
+        <div class="info">
+          <p>登录密码</p>
+          <input type="password" name="password" pattern="[a-zA-Z0-9]{6,20}$" placeholder="由英文, 数字组成, 长度在6到20之间"
+            required>
+        </div>
+
+        <div class="info">
+          <p>联系电话</p>
+          <input type="tel" name="telephone" placeholder="11位电话号码" pattern="[0-9]{11}" required>
+        </div>
+
+        <!-- customer -->
+        <div class="" id="customer">
+          <div class="info">
+            <p>出生日期</p>
+            <input type="date" name="birthday" required>
+          </div>
+
+          <div class="info">
+            <p>性别</p>
+            <label>男 <input type="radio" name="gender" value="man"> </label>
+            <label>女 <input type="radio" name="gender" value="woman"></label>
+          </div>
+
+          <div class="info">
+            <p>姓名</p>
+            <input type="text" name="realname" placeholder="您的真实姓名" required>
+          </div>
+
+          <div class="info">
+            <p>身份证号</p>
+            <input type="text" name="id" placeholder="您的身份证号" required>
+          </div>
+
+          <div class="info">
+            <p>配送地址</p>
+            <input type="text" name="address" placeholder="您希望的配送地址" required>
+          </div>
+        </div>
+
+        <!--  tradesman -->
+        <div class="current" id="tradesman">
+          <div class="info">
+            <p>商家名称</p>
+            <input type="text" name="storename" placeholer="展示给顾客的商家名称，不超过20个字符" maxlength="20" required>
+          </div>
+          <div class="info">
+            <p>商家地址</p>
+            <input type="text" name="address" placeholer="商店的真实所在地址" required>
+          </div>
+        </div>
+
+        <!-- rider -->
+        <div class="current" id="rider">
+          <div class="info">
+            <p>姓名</p>
+            <input type="text" name="realname" placeholer="您的真实姓名" required>
+          </div>
+          <div class="info">
+            <p>家庭住址</p>
+            <input type="text" name="address" placeholer="您目前的居住地址" required>
+          </div>
+        </div>
+
+        <div class="center">
+          <button type="submit">提交</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="bottom">
+    <p class="center" id="hitokoto_text"></p>
+    <p class="center source" id="hitokoto_source"></p>
+  </section>
+</body>
+
+</html>

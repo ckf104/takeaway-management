@@ -35,20 +35,21 @@
           data: $("form").serialize(),
           success: function (data, status) {
             if (data == 'true' && status == 'success') {
-              //console.log('sucrees')
               window.location.replace('/user.html')
             } else if (status != 'success') {
               alert('与服务器连接发生错误')
             }
             else {
-              alert('用户名或密码错误')
+              alert(data)
             }
           },
           error: function (jqXHR, status, error) {
             alert('服务器错误, ' + status + ', ' + error)
+          },
+          complete: function () {
+            $('html').css('cursor', 'default')
           }
-        }).then(() => { })
-        $('html').css('cursor', 'default')
+        })
       })
     })
 
