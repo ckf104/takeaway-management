@@ -54,14 +54,24 @@ interface protocol:
 
 
 
- 3. 获取商家信息
+3. 用户登出（删除session）
 
-    * 请求url
+   * 请求url
 
-    ```
-    /info/tradesman
-    ```
+   ```
+   /auth/logout
+   ```
 
-    * 请求参数 TODO
+   * 请求参数：无
+   * 请求方法：POST
+   * 返回值：一个字符串s，如果s=='true'则登出成功，否则s包含登出失败的原因
 
+4. 获取商家信息
 
+   * 请求url
+
+   ```
+   /info/tradesman
+   ```
+
+   * 请求参数 TODO
