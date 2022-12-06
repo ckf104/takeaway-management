@@ -37,6 +37,7 @@ def checklogin(func):
 @checklogin
 def hello():
     target = 'user.html'
+    g.username = session['username']
     g.goods = allgoods
     g.orders = allorders
     return flask.render_template(target)

@@ -387,9 +387,16 @@
       $('.fixed').addClass('missing')
     })
     $('.inputs form').submit(function (e) {
-      console.log('submit')
       e.preventDefault()
+      var l = $(this).find('input').filter(function () {
+        return !$(this).val();
+      })
+      if (l.length == 4) {
+        alert('请至少修改一项信息')
+        return
+      }
       $('html').css('cursor', 'progress')
+      l.attr("disabled", "disabled")
 
       $.ajax({
         type: 'POST',
@@ -412,6 +419,7 @@
           $('html').css('cursor', 'default')
         }
       })
+      $(this).find("input").prop("disabled", false);
     })
   })
 
@@ -482,24 +490,24 @@
     <h4> 个人信息修改</h4>
     <form>
       <div class="info">
-        <p>新登录用户名</p>
+        <p>新登录用户名(留空则不修改)</p>
         <input type="text" name="name" pattern="[(a-zA-Z0-9\u4e00-\u9fa5_#]{3,20}$"
-          placeholder="由中文, 英文, 数字, 下划线, 井号组成, 长度在3-20之间" required>
+          placeholder="由中文, 英文, 数字, 下划线, 井号组成, 长度在3-20之间">
       </div>
 
       <div class="info">
-        <p>新登录密码</p>
-        <input type="password" name="password" pattern="[a-zA-Z0-9]{6,20}$" placeholder="由英文, 数字组成, 长度在6到20之间" required>
+        <p>新登录密码(留空则不修改)</p>
+        <input type="password" name="password" pattern="[a-zA-Z0-9]{6,20}$" placeholder="由英文, 数字组成, 长度在6到20之间">
       </div>
 
       <div class="info">
-        <p>新联系电话</p>
-        <input type="tel" name="telephone" placeholder="11位电话号码" pattern="[0-9]{11}" required>
+        <p>新联系电话(留空则不修改)</p>
+        <input type="tel" name="telephone" placeholder="11位电话号码" pattern="[0-9]{11}">
       </div>
 
       <div class="info">
-        <p>新配送地址</p>
-        <input type="text" name="address" placeholder="您希望的配送地址" required>
+        <p>新配送地址(留空则不修改)</p>
+        <input type="text" name="address" placeholder="您希望的配送地址">
       </div>
 
       <button id="formbutton">

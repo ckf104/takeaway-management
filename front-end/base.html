@@ -17,7 +17,7 @@
   <div class="head">
     {% block head %}
     <img src="/res/portrait.png">
-    <p id="username">{{ session['username'] }}, <span>欢迎光临</span></p>
+    <p id="username">{{ g.username }}, <span>欢迎光临</span></p>
     <p id="setting"><span id="change" href="">修改信息</span><span id="logout" href="">登出 </span> </p>
     {% endblock %}
   </div>
