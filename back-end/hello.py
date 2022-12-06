@@ -1,11 +1,22 @@
 #! /usr/bin/python3
 from flask import Flask, request, g, session, sessions
+from collections import namedtuple
 import functools
+import random
 import os
 import flask
 
+goods = namedtuple('goods', ['storename', 'goodsname', 'price', 'sellcount'])
+order = namedtuple('order', ['id', 'storename',
+                   'goodsname', 'number', 'price', 'status'])
+allgoods = [goods(f'store{i + 1}', f'goods{i}', f'{i}', f'{i*10}')
+            for i in range(1, 31)]
+allorders = [order(f'0x1234597ff{i}', 'store1', 'goods', '2', '30', 'transport')
+             for i in range(1, 31)]
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'd67e5a09-05b8-44e8-804f-90f2e84a4552'
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 bp = flask.Blueprint('m', __name__, url_prefix='', static_url_path='/',
                      static_folder='/',
@@ -26,7 +37,8 @@ def checklogin(func):
 @checklogin
 def hello():
     target = 'user.html'
-    g.user = {'name': 'ckf104'}
+    g.goods = allgoods
+    g.orders = allorders
     return flask.render_template(target)
 
 
@@ -60,6 +72,15 @@ def logout():
     session.clear()
     return 'true'
 
+@bp.route('/info/orders', methods=['POST'])
+def receive_orders():
+    print(request.json)
+    return 'true'
+
+@bp.route('/info/changesetting', methods=['POST'])
+def change_setting():
+    print(request.form)
+    return 'true'
 
 # teardown functions are called after the context with block exits
 app.register_blueprint(bp)

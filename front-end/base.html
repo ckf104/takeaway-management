@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}樱花外卖{% endblock%} </title>
+  <script src="/js/jquery-3.6.1.js"></script>
+  <script src="/js/oneline.js"></script>
+  <script src="/js/logout.js"></script>
+  {% block style %}{% endblock %}
+  {% block script %}{% endblock %}
+</head>
+
+<body>
+  <div class="head">
+    {% block head %}
+    <img src="/res/portrait.png">
+    <p id="username">{{ session['username'] }}, <span>欢迎光临</span></p>
+    <p id="setting"><span id="change" href="">修改信息</span><span id="logout" href="">登出 </span> </p>
+    {% endblock %}
+  </div>
+  <div class="middle">
+    {% block content %}{% endblock %}
+  </div>
+  <div class="bottom">
+    <p class="center" id="hitokoto_text"></p>
+    <p class="center source" id="hitokoto_source"></p>
+  </div>
+
+</body>
+
+{% block extra %}{% endblock %}
+
+</html>

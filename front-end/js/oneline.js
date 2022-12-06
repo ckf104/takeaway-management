@@ -1,5 +1,3 @@
-//const jquery361 = require("./jquery-3.6.1");
-
 $(function () {
   $.ajax({
     type: 'GET',
