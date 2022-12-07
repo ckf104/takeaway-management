@@ -43,6 +43,7 @@
   div.title {
     padding-left: 10%;
     padding-bottom: 20px;
+    font-size: 1.8rem;
   }
 
   div>div>* {
@@ -200,6 +201,10 @@
     text-align: center;
     font-size: 1.5rem;
     margin-bottom: 10px;
+  }
+  .orders>h4{
+    text-align: center;
+    padding-bottom: 10px;
   }
 
   button#formbutton {
@@ -464,7 +469,7 @@
 </div>
 
 <div class="orders">
-
+  <h4>进行中的订单</h4>
   {% for value in g.orders %}
   <div class="unitorder unit">
     <!--
