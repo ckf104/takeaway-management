@@ -8,6 +8,10 @@
   <script src="/js/jquery-3.6.1.js"></script>
   <script src="/js/oneline.js"></script>
   <script>
+    var m = {
+      'customer': 'user.html', 'tradesman': 'tradesman.html',
+      'rider': 'rider.html', 'manager': 'manager.html'
+    }
     $(function () {
       $("input[value='customer'").get(0).checked = true;
       $("input[type='text']").on("input", function () {
@@ -32,10 +36,14 @@
         $.ajax({
           type: 'POST',
           url: '/auth/login',
-          data: $("form").serialize(),
+          data: $(this).serialize(),
           success: function (data, status) {
             if (data == 'true' && status == 'success') {
-              window.location.replace('/user.html')
+              for (let [key, value] of d) {
+                if (key == 'identity') {
+                  window.location.replace('/' + m[value])
+                }
+              }
             } else if (status != 'success') {
               alert('与服务器连接发生错误')
             }
