@@ -91,12 +91,21 @@ def receive_orders():
     print(request.json)
     return 'true'
 
+@bp.route('/info/orderchange', methods=['POST'])
+def order_change():
+    print(request.form)
+    return 'true'
+
 
 @bp.route('/info/changesetting', methods=['POST'])
 def change_setting():
     print(request.form)
     return 'true'
 
+@bp.route('/info/goodschange', methods=['POST'])
+def change_goods():
+    print(request.form)
+    return 'true'
 
 # teardown functions are called after the context with block exits
 app.register_blueprint(bp)
