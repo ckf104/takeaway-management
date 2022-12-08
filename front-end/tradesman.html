@@ -1,0 +1,579 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+  * {
+    margin: 0px;
+    padding: 0px;
+  }
+
+  html {
+    height: 100%;
+  }
+
+  body {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+    background-color: #dfe0da;
+  }
+
+  .head {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 2px solid;
+    padding-top: 5px;
+    padding-left: 5px;
+    padding-bottom: 5px;
+    background: linear-gradient(90deg, #dfe0da, #595a57);
+  }
+
+  .head img {
+    border-radius: 50%;
+    width: 50px;
+    height: auto;
+  }
+
+  p#username {
+    padding-top: 15px;
+    padding-left: 15px;
+  }
+
+  #setting {
+    padding-top: 15px;
+    text-align: right;
+    flex-grow: 1;
+  }
+
+  span#change {
+    padding-right: 10px;
+  }
+
+  span#addgoods {
+    padding-right: 10px;
+  }
+
+  #setting span:hover {
+    cursor: pointer;
+  }
+
+  .middle {
+    flex-direction: row;
+    display: flex;
+    height: 80%;
+    width: 100%;
+  }
+
+  .selectionBar {
+    overflow: scroll;
+    width: 50%;
+  }
+
+  .title {
+    padding-left: 10%;
+    padding-bottom: 20px;
+    font-size: 1.8rem;
+  }
+
+  .orders {
+    overflow: scroll;
+    width: 50%;
+  }
+
+  .unit {
+    flex-direction: row;
+    display: flex;
+    margin-bottom: 10px;
+  }
+
+  .unitgoods>div {
+    overflow-x: auto;
+    width: 120px;
+    margin-right: 10px;
+  }
+
+  .unit img {
+    border-radius: 10%;
+    width: auto;
+    height: 80px;
+    margin-right: 10px;
+  }
+
+  .unitgoods button {
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+  }
+
+  .unitorder {
+    margin-left: 40px;
+  }
+
+  .buttons {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .buttons button {
+    margin-top: 10px;
+    width: 100px;
+    height: 30px;
+  }
+
+  .bottom {
+    padding-top: 10px;
+    text-align: center;
+    font-size: 2rem;
+  }
+
+  .source {
+    padding-left: 40%;
+  }
+
+  /*-------------------------------------------------*/
+  .info {
+    font-size: 1.1rem;
+    padding-left: 18%;
+    margin-bottom: 20px;
+  }
+
+  .close {
+    position: absolute;
+    top: 0%;
+    right: 0%;
+    transform: translate(-10px, 3px);
+  }
+
+  .close:hover {
+    cursor: pointer;
+  }
+
+  .close::before,
+  .close::after {
+    content: '';
+    display: inline-block;
+    background-color: red;
+    width: 1px;
+    height: 20px;
+  }
+
+  .close::before {
+    transform: rotate(45deg);
+  }
+
+  .close::after {
+    transform: rotate(-45deg);
+  }
+
+  .fixed {
+    width: 100%;
+    height: 100%;
+    top: 0%;
+    left: 0%;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+  }
+
+  .inputs>h4 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+
+  button#formbutton {
+    margin-bottom: 10px;
+    margin-left: 40%;
+  }
+
+  #goodssetting button#formbutton {
+    margin-left: 20%;
+    margin-right: 15px;
+  }
+
+  div.inputs {
+    position: absolute;
+    width: 20%;
+    height: auto;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid;
+    border-radius: 5px;
+    background: linear-gradient(120deg, #dfe0da, #595a57);
+  }
+
+  .missing {
+    display: none;
+  }
+</style>
+{% endblock %}
+
+
+
+{% block script %}
+<script>
+  function getunitgoods(price, name) {
+    return `<div class="unitgoods unit">
+      <img class="goodspic" src="/res/goods.jpg">
+      <div>
+        <h4><span id="goodsname">${name}</span></h4>
+        <p>月售0</p>
+        <h4>￥<span id="goodsprice">${price}</span></h4>
+      </div>
+      <button id="goodschange"> 修改信息 </button>
+    </div>`
+  }
+  function getwidth() {
+    return Math.max(...$('.unit.unitgoods > div').
+      map(function () {
+        return $(this).width()
+      }))
+  }
+
+
+  $(function () {
+    var w = getwidth()
+    //$('.unit.unitgoods>div').css('width', w + 15)
+
+    var orders = $('.unit.unitorder > div:first-child')
+    if (orders.length > 0) {
+      var w2 = Math.max(...orders.map(function () {
+        return $(this).width()
+      })) + 15
+      orders.css('width', w2)
+    }
+
+    $('.buttons').click(function (e) {
+      var next = ''
+      if (e.target.id == 'orderacc') {
+        next = '3'
+      } else if (e.target.id == 'orderrej') {
+        next = '1'
+      } else {
+        return
+      }
+      $('html').css('cursor', 'progress')
+      var formdata = new FormData()
+      var o = $(this).parent()
+      formdata.append('previous', '0');
+      formdata.append('next', next);
+      formdata.append('id', $(this).prev().find('span.orderid').html())
+
+      $.ajax({
+        type: 'POST',
+        url: '/info/orderchange',
+        processData: false,
+        contentType: false,
+        data: formdata,
+        success: function (data, status) {
+          if (data == 'true') {
+            o.hide("slow", function () { $(this).remove(); })
+          } else {
+            alert(data)
+          }
+        },
+        error: function (jqXHR, status, error) {
+          alert('服务器错误, ' + status + ', ' + error)
+        },
+        complete: function () {
+          $('html').css('cursor', 'default')
+        }
+      })
+    })
+    $('#storesetting form').submit(function (e) {
+      e.preventDefault()
+      var l = $(this).find('input').filter(function () {
+        return !$(this).val();
+      })
+      if (l.length == 4) {
+        alert('请至少修改一项信息')
+        return
+      }
+      $('html').css('cursor', 'progress')
+      l.attr("disabled", "disabled")
+
+      $.ajax({
+        type: 'POST',
+        url: '/info/changesetting',
+        data: $(this).serialize(),
+        success: function (data, status) {
+          if (data == 'true' && status == 'success') {
+            alert('信息修改成功')
+          }
+          else {
+            alert(data)
+          }
+        },
+        error: function (jqXHR, status, error) {
+          alert('服务器错误, ' + status + ', ' + error)
+        },
+        complete: function () {
+          $('html').css('cursor', 'default')
+        }
+      })
+      $(this).find("input").prop("disabled", false);
+    })
+
+    var buttondom, isdelete
+    $('#goodsform').click(function (e) {
+      isdelete = e.target.id == 'goodsdelete'
+    })
+    $('#goodsform').submit(function (e) {
+      e.preventDefault()
+      var nname = $('#goodsform #newname').val()
+      var nprice = $('#goodsform #newprice').val()
+      var gname = nname ? nname : $('goodsform #prevname').val()
+      var gprice = nprice ? nprice : $('goodsform #prevprice').val()
+      var l
+      if (isdelete) {
+        l = $(this).find('input#newname,input#newprice')
+      }
+      else {
+        l = $(this).find('input').filter(function () {
+          return !$(this).val();
+        })
+      }
+      if (l.length == 2 && !isdelete) {
+        alert('请至少修改一项信息')
+        return
+      }
+      $('html').css('cursor', 'progress')
+      l.attr("disabled", "disabled")
+
+      $.ajax({
+        type: 'POST',
+        url: '/info/goodschange',
+        data: $(this).serialize(),
+        success: function (data, status) {
+          if (data == 'true' && status == 'success') {
+            if (isdelete) {
+              alert('菜品删除成功')
+              buttondom.parent().hide('slow', function () { $(this).remove() })
+            }
+            else {
+              buttondom.parent().find('#goodsname').html(gname)
+              buttondom.parent().find('#goodsprice').html(gprice)
+              alert('菜品修改成功')
+            }
+          }
+          else {
+            alert(data)
+          }
+        },
+        error: function (jqXHR, status, error) {
+          alert('服务器错误, ' + status + ', ' + error)
+        },
+        complete: function () {
+          $('html').css('cursor', 'default')
+          $('.fixed').addClass('missing')
+        }
+      })
+      $(this).find("input").prop("disabled", false);
+    })
+
+    $('#goodsaddform').submit(function (e) {
+      e.preventDefault()
+      var nname = $('#goodsaddform #newname').val()
+      var nprice = $('#goodsaddform #newprice').val()
+      $('html').css('cursor', 'progress')
+
+      $.ajax({
+        type: 'POST',
+        url: '/info/goodschange',
+        data: $(this).serialize(),
+        success: function (data, status) {
+          if (data == 'true' && status == 'success') {
+            var newitem = $(getunitgoods(nprice, nname))
+            newitem.hide()
+            $('.selectionBar .goods').prepend(newitem)
+            alert('菜品添加成功')
+            newitem.show('slow')
+          }
+          else {
+            alert(data)
+          }
+        },
+        error: function (jqXHR, status, error) {
+          alert('服务器错误, ' + status + ', ' + error)
+        },
+        complete: function () {
+          $('html').css('cursor', 'default')
+        }
+      })
+    })
+
+    $('#setting #change').click(function (e) {
+      $('#settings').removeClass('missing')
+    })
+    $('.selectionBar').click(function (e) {
+      if (e.target.id != 'goodschange') {
+        return
+      }
+      var goodsname = $(e.target).parent().find('#goodsname').html()
+      var goodsprice = $(e.target).parent().find('#goodsprice').html()
+      $('#goodssetting').removeClass('missing')
+      $('#prevname').val(goodsname)
+      $('#prevprice').val(parseInt(goodsprice))
+      buttondom = $(e.target)
+    })
+    $('#setting #addgoods').click(function (e) {
+      $('#goodsaddsetting').removeClass('missing')
+    })
+    $('.close').click(function (e) {
+      $('.fixed').addClass('missing')
+    })
+    // TODO add and delete goods
+  })
+</script>
+{% endblock %}
+
+
+
+{% block content %}
+<div class="selectionBar">
+  <div class="title">
+    菜品目录
+  </div>
+  <div class="goods">
+    {% for value in g.goods %}
+    <div class="unitgoods unit">
+      <img class="goodspic" src="/res/goods.jpg">
+      <div>
+        <h4><span id="goodsname">{{ value['goodsname'] }}</span></h4>
+        <p>月售{{value['sellcount'] }}</p>
+        <h4>￥<span id="goodsprice">{{ value['price'] }}</span></h4>
+      </div>
+      <button id="goodschange"> 修改信息 </button>
+    </div>
+    {% endfor %}
+
+  </div>
+
+</div>
+
+<div class="orders">
+  <h4 class="title">待处理的订单</h4>
+  {% for value in g.orders %}
+  <div class="unitorder unit">
+    <!--
+    <img class="goodspic" src="/res/goods.jpg">
+    -->
+    <div>
+      <h4>订单编号: <span class="orderid">{{ value['id'] }}</span></h4>
+      <p>{{ value['goodsname'] }}, 数量 {{ value['number'] }}</p>
+      <p>总金额￥{{ value['price'] }} </p>
+      <p>配送地址: {{ value['address'] }}</p>
+    </div>
+    <div class="buttons">
+      <button id="orderacc">接受</button>
+      <button id="orderrej">拒绝</button>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+{% endblock %}
+
+
+
+
+{% block extra %}
+
+<div class="fixed missing" id="settings">
+  <div class="inputs" id="storesetting">
+    <p class="close"></p>
+    <h4> 账户信息修改</h4>
+    <form>
+      <div class="info">
+        <p>新登录用户名(留空则不修改)</p>
+        <input type="text" name="name" pattern="[(a-zA-Z0-9\u4e00-\u9fa5_#]{3,20}$"
+          placeholder="由中文, 英文, 数字, 下划线, 井号组成, 长度在3-20之间">
+      </div>
+
+      <div class="info">
+        <p>新登录密码(留空则不修改)</p>
+        <input type="password" name="password" pattern="[a-zA-Z0-9]{6,20}$" placeholder="由英文, 数字组成, 长度在6到20之间">
+      </div>
+
+      <div class="info">
+        <p>新联系电话(留空则不修改)</p>
+        <input type="tel" name="telephone" placeholder="11位电话号码" pattern="[0-9]{11}">
+      </div>
+
+      <div class="info">
+        <p>新店铺地址(留空则不修改)</p>
+        <input type="text" name="address" placeholder="您希望的配送地址">
+      </div>
+
+      <button id="formbutton">
+        修改完成
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="fixed missing" id="goodssetting">
+  <div class="inputs">
+    <p class="close"></p>
+    <h4>菜单信息修改 </h4>
+    <form id="goodsform">
+      <div class="info">
+        <p>原菜品名</p>
+        <input id="prevname" type="text" name="prevname" readonly>
+      </div>
+
+      <div class="info">
+        <p>原价格</p>
+        <input id="prevprice" type="number" name="prevprice" readonly>
+      </div>
+
+      <div class="info">
+        <p>新菜品名(留空则不修改)</p>
+        <input id='newname' type="text" name="newname" placeholder="请输入菜品名称">
+      </div>
+
+      <div class="info">
+        <p>新价格(留空则不修改)</p>
+        <input id="newprice" type="number" name="newprice" placeholder="请输入一个数字">
+      </div>
+
+      <button id="formbutton">
+        修改完成
+      </button>
+      <button id="goodsdelete">
+        删除该菜品
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="fixed missing" id="goodsaddsetting">
+  <div class="inputs">
+    <p class="close"></p>
+    <h4>菜品添加</h4>
+    <form id="goodsaddform">
+      <div class="info">
+        <p>菜品名</p>
+        <input id='newname' type="text" name="newname" placeholder="请输入菜品名称" required>
+      </div>
+      <div class="info">
+        <p>价格</p>
+        <input id="newprice" type="number" name="newprice" placeholder="请输入一个数字" required>
+      </div>
+
+      <button id="formbutton">
+        修改完成
+      </button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block head %}
+<img src="/res/portrait.png">
+<p id="username">{{ g.username }}, <span>欢迎光临</span></p>
+<p id="setting"><span id="addgoods">添加菜品</span><span id="change">修改信息</span><span id="logout">登出 </span> </p>
+{% endblock %}
