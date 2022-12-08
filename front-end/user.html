@@ -202,7 +202,8 @@
     font-size: 1.5rem;
     margin-bottom: 10px;
   }
-  .orders>h4{
+
+  .orders>h4 {
     text-align: center;
     padding-bottom: 10px;
   }
@@ -251,6 +252,22 @@
     padding-top: 15px;
     text-align: right;
     flex-grow: 1;
+  }
+
+  p#one {
+    color: red;
+  }
+
+  p#one:hover {
+    cursor: pointer;
+  }
+
+  p#five {
+    color: green;
+  }
+
+  p#five:hover {
+    cursor: pointer;
   }
 </style>
 {% endblock %}
@@ -426,6 +443,40 @@
       })
       $(this).find("input").prop("disabled", false);
     })
+
+    $('p#one,p#five').click(function (e) {
+      var formdata = new FormData()
+      var order = $(this).parent().parent()
+      formdata.append('id', $(this).parent().find('#orderid').html())
+      if (this.id == 'one') {
+        formdata.append('previous', '1')
+        formdata.append('next', '2')
+      } else {
+        formdata.append('previous', '5')
+        formdata.append('next', '6')
+      }
+      $.ajax({
+        type: 'POST',
+        url: '/info/orderchange',
+        processData: false,
+        contentType: false,
+        data: formdata,
+        success: function (data, status) {
+          if (data == 'true' && status == 'success') {
+            order.hide('slow', function () { $(this).remove() })
+          }
+          else {
+            alert(data)
+          }
+        },
+        error: function (jqXHR, status, error) {
+          alert('服务器错误, ' + status + ', ' + error)
+        },
+        complete: function () {
+          $('html').css('cursor', 'default')
+        }
+      })
+    })
   })
 
 </script>
@@ -476,8 +527,18 @@
     <img class="goodspic" src="/res/goods.jpg">
     -->
     <div>
-      <h4>订单编号: {{ value['id'] }} </h4>
-      <p> 订单状态: {{ value['status'] }}</p>
+      <h4>订单编号: <span id="orderid">{{ value['id'] }}</span> </h4>
+      {% if value['status'] == '0' %}
+      <p id="zero"> 订单状态: <span>商家未确认</span></p>
+      {% elif value['status'] == '1' %}
+      <p id="one" title="点击确认"> 订单状态: <span>订单被商家拒绝</span></p>
+      {% elif value['status'] == '3' %}
+      <p id="three"> 订单状态: <span>商家已接单</span></p>
+      {% elif value['status'] == '4' %}
+      <p id="four"> 订单状态: <span>骑手配送中</span></p>
+      {% elif value['status'] == '5' %}
+      <p id="five" title="点击确认"> 订单状态: <span>外卖已送达</span></p>
+      {% endif %}
       <p>{{ value['storename'] }} ，{{ value['goodsname'] }}</p>
       <p>数量 {{ value['number'] }} ，总价￥{{ value['price'] }} </p>
     </div>

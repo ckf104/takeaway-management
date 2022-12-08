@@ -11,7 +11,7 @@ order = namedtuple('order', ['id', 'storename',
                    'goodsname', 'number', 'price', 'status', 'address'])
 allgoods = [goods(f'store{i + 1}', f'goods{i}', f'{i}', f'{i*10}')
             for i in range(1, 31)]
-allorders = [order(f'0x1234597ff{i}', 'store1', 'goods', '2', '30', 'transport', '11111hao')
+allorders = [order(f'0x1234597ff{i}', 'store1', 'goods', '2', '30', str(random.randint(0, 6)), '11111hao')
              for i in range(1, 31)]
 
 app = Flask(__name__)
@@ -91,6 +91,7 @@ def receive_orders():
     print(request.json)
     return 'true'
 
+
 @bp.route('/info/orderchange', methods=['POST'])
 def order_change():
     print(request.form)
@@ -102,10 +103,12 @@ def change_setting():
     print(request.form)
     return 'true'
 
+
 @bp.route('/info/goodschange', methods=['POST'])
 def change_goods():
     print(request.form)
     return 'true'
+
 
 # teardown functions are called after the context with block exits
 app.register_blueprint(bp)
