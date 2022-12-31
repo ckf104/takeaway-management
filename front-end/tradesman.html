@@ -1,48 +1,16 @@
 {% extends "base.html" %}
 
 {% block style %}
+{{ super() }}
 <style>
-  * {
-    margin: 0px;
-    padding: 0px;
-  }
-
-  html {
-    height: 100%;
-  }
-
-  body {
-    margin: 0px;
-    padding: 0px;
-    height: 100%;
-    background-color: #dfe0da;
-  }
 
   .head {
-    display: flex;
-    flex-direction: row;
-    border-bottom: 2px solid;
-    padding-top: 5px;
-    padding-left: 5px;
-    padding-bottom: 5px;
     background: linear-gradient(90deg, #dfe0da, #595a57);
-  }
-
-  .head img {
-    border-radius: 50%;
-    width: 50px;
-    height: auto;
   }
 
   p#username {
     padding-top: 15px;
     padding-left: 15px;
-  }
-
-  #setting {
-    padding-top: 15px;
-    text-align: right;
-    flex-grow: 1;
   }
 
   span#change {
@@ -53,15 +21,9 @@
     padding-right: 10px;
   }
 
-  #setting span:hover {
-    cursor: pointer;
-  }
-
   .middle {
     flex-direction: row;
     display: flex;
-    height: 80%;
-    width: 100%;
   }
 
   .selectionBar {
@@ -69,21 +31,9 @@
     width: 50%;
   }
 
-  .title {
-    padding-left: 10%;
-    padding-bottom: 20px;
-    font-size: 1.8rem;
-  }
-
   .orders {
     overflow: scroll;
     width: 50%;
-  }
-
-  .unit {
-    flex-direction: row;
-    display: flex;
-    margin-bottom: 10px;
   }
 
   .unitgoods>div {
@@ -120,60 +70,7 @@
     height: 30px;
   }
 
-  .bottom {
-    padding-top: 10px;
-    text-align: center;
-    font-size: 2rem;
-  }
-
-  .source {
-    padding-left: 40%;
-  }
-
   /*-------------------------------------------------*/
-  .info {
-    font-size: 1.1rem;
-    padding-left: 18%;
-    margin-bottom: 20px;
-  }
-
-  .close {
-    position: absolute;
-    top: 0%;
-    right: 0%;
-    transform: translate(-10px, 3px);
-  }
-
-  .close:hover {
-    cursor: pointer;
-  }
-
-  .close::before,
-  .close::after {
-    content: '';
-    display: inline-block;
-    background-color: red;
-    width: 1px;
-    height: 20px;
-  }
-
-  .close::before {
-    transform: rotate(45deg);
-  }
-
-  .close::after {
-    transform: rotate(-45deg);
-  }
-
-  .fixed {
-    width: 100%;
-    height: 100%;
-    top: 0%;
-    left: 0%;
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1;
-  }
 
   .inputs>h4 {
     text-align: center;
@@ -189,22 +86,6 @@
   #goodssetting button#formbutton {
     margin-left: 20%;
     margin-right: 15px;
-  }
-
-  div.inputs {
-    position: absolute;
-    width: 20%;
-    height: auto;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    border: 2px solid;
-    border-radius: 5px;
-    background: linear-gradient(120deg, #dfe0da, #595a57);
-  }
-
-  .missing {
-    display: none;
   }
 </style>
 {% endblock %}
@@ -432,9 +313,9 @@
 
 {% block content %}
 <div class="selectionBar">
-  <div class="title">
+  <h4 class="title">
     菜品目录
-  </div>
+  </h4>
   <div class="goods">
     {% for value in g.goods %}
     <div class="unitgoods unit">
@@ -503,7 +384,7 @@
 
       <div class="info">
         <p>新店铺地址(留空则不修改)</p>
-        <input type="text" name="address" placeholder="您希望的配送地址">
+        <input type="text" name="address" placeholder="新的店铺地址">
       </div>
 
       <button id="formbutton">
@@ -571,9 +452,10 @@
 
 {% endblock %}
 
-
-{% block head %}
+<!--
 <img src="/res/portrait.png">
 <p id="username">{{ g.username }}, <span>欢迎光临</span></p>
+-->
+{% block head %}
 <p id="setting"><span id="addgoods">添加菜品</span><span id="change">修改信息</span><span id="logout">登出 </span> </p>
 {% endblock %}

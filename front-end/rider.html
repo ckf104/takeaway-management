@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block style %}
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+
+{% block content %}
+<div class="selectionBar">
+  <div class="title">
+    菜品目录
+  </div>
+  <div class="goods">
+    {% for value in g.goods %}
+    <div class="unitgoods unit">
+      <img class="goodspic" src="/res/goods.jpg">
+      <div>
+        <h4><span id="goodsname">{{ value['goodsname'] }}</span></h4>
+        <p>月售{{value['sellcount'] }}</p>
+        <h4>￥<span id="goodsprice">{{ value['price'] }}</span></h4>
+      </div>
+      <button id="goodschange"> 修改信息 </button>
+    </div>
+    {% endfor %}
+
+  </div>
+
+</div>
+
+<div class="orders">
+  <h4 class="title">待处理的订单</h4>
+  {% for value in g.orders %}
+  <div class="unitorder unit">
+    <!--
+    <img class="goodspic" src="/res/goods.jpg">
+    -->
+    <div>
+      <h4>订单编号: <span class="orderid">{{ value['id'] }}</span></h4>
+      <p>{{ value['goodsname'] }}, 数量 {{ value['number'] }}</p>
+      <p>总金额￥{{ value['price'] }} </p>
+      <p>配送地址: {{ value['address'] }}</p>
+    </div>
+    <div class="buttons">
+      <button id="orderacc">接受</button>
+      <button id="orderrej">拒绝</button>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+{% endblock %}
+
+{% block extra %}
+{% endblock %}
