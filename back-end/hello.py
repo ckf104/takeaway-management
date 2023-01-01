@@ -8,10 +8,10 @@ import flask
 
 goods = namedtuple('goods', ['storename', 'goodsname', 'price', 'sellcount'])
 order = namedtuple('order', ['id', 'storename',
-                   'goodsname', 'number', 'price', 'status', 'address'])
+                   'goodsname', 'number', 'price', 'status', 'address', 'useraddr'])
 allgoods = [goods(f'store{i + 1}', f'goods{i}', f'{i}', f'{i*10}')
             for i in range(1, 31)]
-allorders = [order(f'0x1234597ff{i}', 'store1', 'goods', '2', '30', str(random.randint(0, 6)), '11111hao')
+allorders = [order(f'0x1234597ff{i}', 'store1', 'goods', '2', '30', str(random.randint(0, 6)), '11111hao', '2222qqq')
              for i in range(1, 31)]
 
 app = Flask(__name__)
