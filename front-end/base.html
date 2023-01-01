@@ -32,6 +32,12 @@
       padding-top: 5px;
       padding-left: 5px;
       padding-bottom: 5px;
+      background: linear-gradient(90deg, #dfe0da, #595a57);
+    }
+
+    #username {
+      padding-top: 15px;
+      padding-left: 15px;
     }
 
     .head img {
@@ -46,6 +52,10 @@
       flex-grow: 1;
     }
 
+    #setting span {
+      margin-right: 10px;
+    }
+
     #setting span:hover {
       cursor: pointer;
     }
@@ -53,6 +63,8 @@
     .middle {
       height: 80%;
       width: 100%;
+      flex-direction: row;
+      display: flex;
       /*scrollbar-color: rebeccapurple green;*/
     }
 
@@ -143,7 +155,80 @@
     }
   </style>
   {% endblock %}
-  {% block script %}{% endblock %}
+  {% block script %}
+  <script>
+    function setwidth(selector, w) {
+      var r = $(selector)
+      if (r.length == 0) {
+        return 0
+      }
+      var maxw = Math.max(...r.
+        map(function () {
+          return $(this).width()
+        }))
+      r.css('width', maxw + w)
+      return maxw + w
+    }
+
+    function sendCustomForm(url, d, succfunc, compfunc) {
+      $('html').css('cursor', 'progress')
+      if (compfunc == undefined) {
+        compfunc = function () {
+          $('html').css('cursor', 'default')
+        }
+      }
+      $.ajax({
+        type: 'POST',
+        url: url,
+        processData: false,
+        contentType: false,
+        data: d,
+        success: succfunc,
+        error: function (jqXHR, status, error) {
+          alert('服务器错误, ' + status + ', ' + error)
+        },
+        complete: compfunc
+      })
+    }
+    function sendForm(url, d, succfunc, compfunc) {
+      $('html').css('cursor', 'progress')
+      if (compfunc == undefined) {
+        compfunc = function () {
+          $('html').css('cursor', 'default')
+        }
+      }
+      $.ajax({
+        type: 'POST',
+        url: url,
+        data: d,
+        success: succfunc,
+        error: function (jqXHR, status, error) {
+          alert('服务器错误, ' + status + ', ' + error)
+        },
+        complete: compfunc
+      })
+    }
+    function sendJson(url, d, succfunc, compfunc) {
+      $('html').css('cursor', 'progress')
+      if (compfunc == undefined) {
+        compfunc = function () {
+          $('html').css('cursor', 'default')
+        }
+      }
+      $.ajax({
+        type: 'POST',
+        contentType: 'application/json',
+        url: url,
+        data: d,
+        success: succfunc,
+        error: function (jqXHR, status, error) {
+          alert('服务器错误, ' + status + ', ' + error)
+        },
+        complete: compfunc
+      })
+    }
+  </script>
+  {% endblock %}
 </head>
 
 <body>

@@ -1,56 +1,146 @@
 {% extends "base.html" %}
 
 {% block style %}
+{{ super() }}
+
+<style>
+  .waitingOrdersBar {
+    overflow: scroll;
+    width: 50%;
+  }
+
+  .accOrdersBar {
+    overflow: scroll;
+    width: 50%;
+  }
+
+  .unit {
+    margin-left: 15px;
+  }
+
+  .unit>div {
+    overflow-x: auto;
+  }
+
+  .buttons {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 20px;
+  }
+</style>
 {% endblock %}
 
 {% block script %}
+{{ super() }}
+<script>
+  function ctorAccOrder(str) {
+    return `<div class="unitaccorder unit"> 
+      <div>${str}</div>
+      <button class="buttons">订单送达 </button>
+      </div>`
+  }
+
+  $(function () {
+    setwidth('.unitwaitorder > div:first-child', 15)
+    var accw = setwidth('.unitaccorder > div:first-child', 25)
+    $('.waitingorders').click(function (e) {
+      var but = $(e.target)
+      if (!but.hasClass('buttons')) {
+        return
+      }
+      var ord = but.prev().find('span.orderid').html()
+      var orderinfo = but.prev()
+      var accorders = $('.accorders')
+      var formdata = new FormData()
+      formdata.append('previous', '3')
+      formdata.append('next', '4')
+      formdata.append('id', ord)
+      sendCustomForm('/info/orderchange', formdata, function (data, status) {
+        if (data == 'true') {
+          var newaccorder = $(ctorAccOrder(orderinfo.html()))
+          newaccorder.hide()
+          $('.accorders').prepend(newaccorder)
+          newaccorder.show('slow', function () {
+            if (accw == 0) {
+              accw = setwidth('.unitaccorder > div:first-child', 25)
+            } else {
+              newaccorder.find('div:first-child').css('width', accw)
+            }
+          })
+          orderinfo.parent().hide("slow", function () { $(this).remove(); })
+        } else {
+          alert(data)
+        }
+      })
+    })
+    $('.accorders').click(function (e) {
+      var but = $(e.target)
+      if (!but.hasClass('buttons')) {
+        return
+      }
+      var ord = but.prev().find('span.orderid').html()
+      var unitorder = but.parent()
+      var formdata = new FormData()
+      formdata.append('previous', 4)
+      formdata.append('next', 5)
+      formdata.append('id', ord)
+      sendCustomForm('/info/orderchange', formdata, function (data, status) {
+        if (data == 'true') {
+          unitorder.hide('slow', function () { $(this).remove() })
+        } else {
+          alert(data)
+        }
+      })
+    })
+  })
+</script>
 {% endblock %}
 
 {% block content %}
-<div class="selectionBar">
+<div class="waitingOrdersBar">
   <div class="title">
-    菜品目录
+    可接受订单
   </div>
-  <div class="goods">
-    {% for value in g.goods %}
-    <div class="unitgoods unit">
-      <img class="goodspic" src="/res/goods.jpg">
+  <div class="waitingorders">
+    {% for value in g.waitingOrders %}
+    <div class="unitwaitorder unit">
       <div>
-        <h4><span id="goodsname">{{ value['goodsname'] }}</span></h4>
-        <p>月售{{value['sellcount'] }}</p>
-        <h4>￥<span id="goodsprice">{{ value['price'] }}</span></h4>
+        <h4>订单编号: <span class="orderid">{{ value['id'] }}</span></h4>
+        <p>店铺名: {{ value['storename'] }}, 地址: {{ value['address'] }}</p>
+        <p>商品名: {{ value['goodsname'] }}, 数量 {{ value['number'] }}</p>
+        <p>配送地址: {{ value['address'] }}</p>
       </div>
-      <button id="goodschange"> 修改信息 </button>
+      <button class="buttons">抢单</button>
     </div>
     {% endfor %}
-
   </div>
 
 </div>
 
-<div class="orders">
-  <h4 class="title">待处理的订单</h4>
-  {% for value in g.orders %}
-  <div class="unitorder unit">
-    <!--
-    <img class="goodspic" src="/res/goods.jpg">
-    -->
-    <div>
-      <h4>订单编号: <span class="orderid">{{ value['id'] }}</span></h4>
-      <p>{{ value['goodsname'] }}, 数量 {{ value['number'] }}</p>
-      <p>总金额￥{{ value['price'] }} </p>
-      <p>配送地址: {{ value['address'] }}</p>
-    </div>
-    <div class="buttons">
-      <button id="orderacc">接受</button>
-      <button id="orderrej">拒绝</button>
-    </div>
+<div class="accOrdersBar">
+  <div class="title">
+    配送中订单
   </div>
-  {% endfor %}
-
+  <div class="accorders">
+    {% for value in g.accOrders %}
+    <div class="unitaccorder unit">
+      <div>
+        <h4>订单编号: <span class="orderid">{{ value['id'] }}</span></h4>
+        <p>店铺名: {{ value['storename'] }}, 地址: {{ value['address'] }}</p>
+        <p>商品名: {{ value['goodsname'] }}, 数量 {{ value['number'] }}</p>
+        <p>配送地址: {{ value['address'] }}</p>
+      </div>
+      <button class="buttons">订单送达 </button>
+    </div>
+    {% endfor %}
+  </div>
 </div>
 
 {% endblock %}
 
 {% block extra %}
+{% endblock %}
+
+{% block head %}
+<p id="setting"><span id="logout">登出 </span> </p>
 {% endblock %}

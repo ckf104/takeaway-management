@@ -52,6 +52,16 @@ def tradesman():
     return flask.render_template(target)
 
 
+@bp.route('/rider.html')
+def rider():
+    target = 'rider.html'
+    g.username = session['username']
+    g.waitingOrders = [allorders[i]
+                       for i in range(len(allorders)) if i % 2 == 0]
+    g.accOrders = [allorders[i] for i in range(len(allorders)) if i % 2 != 0]
+    return flask.render_template(target)
+
+
 @bp.route('/')
 def default():
     return flask.redirect('index.html')
@@ -72,7 +82,7 @@ def auth_login():
     identity = request.form['identity']
     name = request.form['name']
     password = request.form['password']
-    if identity == 'customer' or identity == 'tradesman' and name == 'ckf104' and password == '123456789':
+    if identity in ['customer', 'tradesman', 'rider', 'manager'] and name == 'ckf104' and password == '123456789':
         session['username'] = name
         session['identity'] = identity
         return 'true'

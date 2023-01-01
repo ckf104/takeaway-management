@@ -3,10 +3,6 @@
 {% block style %}
 {{ super() }}
 <style>
-  .head { 
-    background: linear-gradient(90deg, #dfe0da, #595a57);
-  }
-
   div>div>* {
     padding-bottom: 3px;
   }
@@ -37,11 +33,6 @@
   .unit button {
     margin-top: 20px;
     margin-bottom: 20px;
-  }
-
-  .middle {
-    flex-direction: row;
-    display: flex;
   }
 
   .selectionBar {
@@ -89,6 +80,11 @@
     height: 70%;
   }
 
+  .unit.unitcart>div {
+    overflow-x: auto;
+    width: 150px;
+  }
+
   .orders {
     flex-grow: 0;
     overflow: scroll;
@@ -108,15 +104,6 @@
   button#formbutton {
     margin-bottom: 10px;
     margin-left: 40%;
-  }
-
-  p#username {
-    padding-top: 15px;
-    padding-left: 15px;
-  }
-
-  span#change {
-    padding-right: 10px;
   }
 
   #default {
@@ -148,6 +135,7 @@
 {% endblock %}
 
 {% block script %}
+{{ super() }}
 <script>
   Array.max = function (array) {
     return Math.max.apply(Math, array);
@@ -157,11 +145,7 @@
   var total_price = 0  // TODO
 
   $(function () {
-    w = Math.max(...$('.unit.unitgoods > div').
-      map(function () {
-        return $(this).width()
-      })) + 15
-    $('.unit.unitgoods>div').css('width', w)
+    setwidth('.unit.unitgoods > div', 15)
     //$('#default').css('width', w)
 
     //console.log($('.unit.unitgoods > div').width())
@@ -200,8 +184,6 @@
           '</div>')
         cartlist.set(storename + '-' + goodsname, cart.children('div:last-child'))
         $('#default').addClass('missing')
-
-        $('.unit.unitcart>div').css('width', w)
       }
     })
     $('.cart__').click(function (e) {
@@ -252,28 +234,12 @@
           'price': price,
         })
       })
-
-      $.ajax({
-        type: 'POST',
-        contentType: 'application/json',
-        url: '/info/orders',
-        data: JSON.stringify(dataarr),
-        success: function (data, status) {
-          if (data == 'true' && status == 'success') {
-            alert('订单提交成功')
-            window.location.reload()
-          } else if (status != 'success') {
-            alert('与服务器连接发生错误')
-          }
-          else {
-            alert(data)
-          }
-        },
-        error: function (jqXHR, status, error) {
-          alert('服务器错误, ' + status + ', ' + error)
-        },
-        complete: function () {
-          $('html').css('cursor', 'default')
+      sendJson('/info/orders', JSON.stringify(dataarr), function (data, status) {
+        if (data == 'true') {
+          alert('订单提交成功')
+          window.location.reload()
+        } else {
+          alert(data)
         }
       })
     })
@@ -295,25 +261,14 @@
       $('html').css('cursor', 'progress')
       l.attr("disabled", "disabled")
 
-      $.ajax({
-        type: 'POST',
-        url: '/info/changesetting',
-        data: $(this).serialize(),
-        success: function (data, status) {
-          if (data == 'true' && status == 'success') {
-            alert('信息修改成功')
-          } else if (status != 'success') {
-            alert('与服务器连接发生错误')
-          }
-          else {
-            alert(data)
-          }
-        },
-        error: function (jqXHR, status, error) {
-          alert('服务器错误, ' + status + ', ' + error)
-        },
-        complete: function () {
-          $('html').css('cursor', 'default')
+      sendForm('/info/changesetting', $(this).serialize(), function (data, status) {
+        if (data == 'true' && status == 'success') {
+          alert('信息修改成功')
+        } else if (status != 'success') {
+          alert('与服务器连接发生错误')
+        }
+        else {
+          alert(data)
         }
       })
       $(this).find("input").prop("disabled", false);
@@ -330,25 +285,12 @@
         formdata.append('previous', '5')
         formdata.append('next', '6')
       }
-      $.ajax({
-        type: 'POST',
-        url: '/info/orderchange',
-        processData: false,
-        contentType: false,
-        data: formdata,
-        success: function (data, status) {
-          if (data == 'true' && status == 'success') {
-            order.hide('slow', function () { $(this).remove() })
-          }
-          else {
-            alert(data)
-          }
-        },
-        error: function (jqXHR, status, error) {
-          alert('服务器错误, ' + status + ', ' + error)
-        },
-        complete: function () {
-          $('html').css('cursor', 'default')
+      sendCustomForm('/info/orderchange', formdata, function (data, status) {
+        if (data == 'true' && status == 'success') {
+          order.hide('slow', function () { $(this).remove() })
+        }
+        else {
+          alert(data)
         }
       })
     })
