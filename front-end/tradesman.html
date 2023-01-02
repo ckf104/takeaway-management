@@ -1,89 +1,16 @@
 {% extends "base.html" %}
 
 {% block style %}
+{{ super() }}
 <style>
-  * {
-    margin: 0px;
-    padding: 0px;
-  }
-
-  html {
-    height: 100%;
-  }
-
-  body {
-    margin: 0px;
-    padding: 0px;
-    height: 100%;
-    background-color: #dfe0da;
-  }
-
-  .head {
-    display: flex;
-    flex-direction: row;
-    border-bottom: 2px solid;
-    padding-top: 5px;
-    padding-left: 5px;
-    padding-bottom: 5px;
-    background: linear-gradient(90deg, #dfe0da, #595a57);
-  }
-
-  .head img {
-    border-radius: 50%;
-    width: 50px;
-    height: auto;
-  }
-
-  p#username {
-    padding-top: 15px;
-    padding-left: 15px;
-  }
-
-  #setting {
-    padding-top: 15px;
-    text-align: right;
-    flex-grow: 1;
-  }
-
-  span#change {
-    padding-right: 10px;
-  }
-
-  span#addgoods {
-    padding-right: 10px;
-  }
-
-  #setting span:hover {
-    cursor: pointer;
-  }
-
-  .middle {
-    flex-direction: row;
-    display: flex;
-    height: 80%;
-    width: 100%;
-  }
-
   .selectionBar {
     overflow: scroll;
     width: 50%;
   }
 
-  .title {
-    padding-left: 10%;
-    padding-bottom: 20px;
-    font-size: 1.8rem;
-  }
-
   .orders {
     overflow: scroll;
     width: 50%;
-  }
-
-  .unit {
-    flex-direction: row;
-    display: flex;
-    margin-bottom: 10px;
   }
 
   .unitgoods>div {
@@ -120,60 +47,7 @@
     height: 30px;
   }
 
-  .bottom {
-    padding-top: 10px;
-    text-align: center;
-    font-size: 2rem;
-  }
-
-  .source {
-    padding-left: 40%;
-  }
-
   /*-------------------------------------------------*/
-  .info {
-    font-size: 1.1rem;
-    padding-left: 18%;
-    margin-bottom: 20px;
-  }
-
-  .close {
-    position: absolute;
-    top: 0%;
-    right: 0%;
-    transform: translate(-10px, 3px);
-  }
-
-  .close:hover {
-    cursor: pointer;
-  }
-
-  .close::before,
-  .close::after {
-    content: '';
-    display: inline-block;
-    background-color: red;
-    width: 1px;
-    height: 20px;
-  }
-
-  .close::before {
-    transform: rotate(45deg);
-  }
-
-  .close::after {
-    transform: rotate(-45deg);
-  }
-
-  .fixed {
-    width: 100%;
-    height: 100%;
-    top: 0%;
-    left: 0%;
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1;
-  }
 
   .inputs>h4 {
     text-align: center;
@@ -190,28 +64,13 @@
     margin-left: 20%;
     margin-right: 15px;
   }
-
-  div.inputs {
-    position: absolute;
-    width: 20%;
-    height: auto;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    border: 2px solid;
-    border-radius: 5px;
-    background: linear-gradient(120deg, #dfe0da, #595a57);
-  }
-
-  .missing {
-    display: none;
-  }
 </style>
 {% endblock %}
 
 
 
 {% block script %}
+{{ super() }}
 <script>
   function getunitgoods(price, name) {
     return `<div class="unitgoods unit">
@@ -224,25 +83,10 @@
       <button id="goodschange"> 修改信息 </button>
     </div>`
   }
-  function getwidth() {
-    return Math.max(...$('.unit.unitgoods > div').
-      map(function () {
-        return $(this).width()
-      }))
-  }
-
 
   $(function () {
-    var w = getwidth()
-    //$('.unit.unitgoods>div').css('width', w + 15)
-
-    var orders = $('.unit.unitorder > div:first-child')
-    if (orders.length > 0) {
-      var w2 = Math.max(...orders.map(function () {
-        return $(this).width()
-      })) + 15
-      orders.css('width', w2)
-    }
+    var goodsw = setwidth('.unit.unitgoods > div', 15)
+    var orderw = setwidth('.unit.unitorder > div', 25)
 
     $('.buttons').click(function (e) {
       var next = ''
@@ -253,34 +97,20 @@
       } else {
         return
       }
-      $('html').css('cursor', 'progress')
       var formdata = new FormData()
       var o = $(this).parent()
       formdata.append('previous', '0');
       formdata.append('next', next);
       formdata.append('id', $(this).prev().find('span.orderid').html())
-
-      $.ajax({
-        type: 'POST',
-        url: '/info/orderchange',
-        processData: false,
-        contentType: false,
-        data: formdata,
-        success: function (data, status) {
-          if (data == 'true') {
-            o.hide("slow", function () { $(this).remove(); })
-          } else {
-            alert(data)
-          }
-        },
-        error: function (jqXHR, status, error) {
-          alert('服务器错误, ' + status + ', ' + error)
-        },
-        complete: function () {
-          $('html').css('cursor', 'default')
+      sendCustomForm('/info/orderchange', formdata, function (data, status) {
+        if (data == 'true') {
+          o.hide("slow", function () { $(this).remove(); })
+        } else {
+          alert(data)
         }
       })
     })
+
     $('#storesetting form').submit(function (e) {
       e.preventDefault()
       var l = $(this).find('input').filter(function () {
@@ -290,26 +120,14 @@
         alert('请至少修改一项信息')
         return
       }
-      $('html').css('cursor', 'progress')
       l.attr("disabled", "disabled")
 
-      $.ajax({
-        type: 'POST',
-        url: '/info/changesetting',
-        data: $(this).serialize(),
-        success: function (data, status) {
-          if (data == 'true' && status == 'success') {
-            alert('信息修改成功')
-          }
-          else {
-            alert(data)
-          }
-        },
-        error: function (jqXHR, status, error) {
-          alert('服务器错误, ' + status + ', ' + error)
-        },
-        complete: function () {
-          $('html').css('cursor', 'default')
+      sendForm('/info/changesetting', $(this).serialize(), function (data, status) {
+        if (data == 'true' && status == 'success') {
+          alert('信息修改成功')
+        }
+        else {
+          alert(data)
         }
       })
       $(this).find("input").prop("disabled", false);
@@ -341,33 +159,24 @@
       $('html').css('cursor', 'progress')
       l.attr("disabled", "disabled")
 
-      $.ajax({
-        type: 'POST',
-        url: '/info/goodschange',
-        data: $(this).serialize(),
-        success: function (data, status) {
-          if (data == 'true' && status == 'success') {
-            if (isdelete) {
-              alert('菜品删除成功')
-              buttondom.parent().hide('slow', function () { $(this).remove() })
-            }
-            else {
-              buttondom.parent().find('#goodsname').html(gname)
-              buttondom.parent().find('#goodsprice').html(gprice)
-              alert('菜品修改成功')
-            }
+      sendForm('/info/goodschange', $(this).serialize(), function (data, status) {
+        if (data == 'true' && status == 'success') {
+          if (isdelete) {
+            alert('菜品删除成功')
+            buttondom.parent().hide('slow', function () { $(this).remove() })
           }
           else {
-            alert(data)
+            buttondom.parent().find('#goodsname').html(gname)
+            buttondom.parent().find('#goodsprice').html(gprice)
+            alert('菜品修改成功')
           }
-        },
-        error: function (jqXHR, status, error) {
-          alert('服务器错误, ' + status + ', ' + error)
-        },
-        complete: function () {
-          $('html').css('cursor', 'default')
-          $('.fixed').addClass('missing')
         }
+        else {
+          alert(data)
+        }
+      }, function () {
+        $('html').css('cursor', 'default')
+        $('.fixed').addClass('missing')
       })
       $(this).find("input").prop("disabled", false);
     })
@@ -378,27 +187,22 @@
       var nprice = $('#goodsaddform #newprice').val()
       $('html').css('cursor', 'progress')
 
-      $.ajax({
-        type: 'POST',
-        url: '/info/goodschange',
-        data: $(this).serialize(),
-        success: function (data, status) {
-          if (data == 'true' && status == 'success') {
-            var newitem = $(getunitgoods(nprice, nname))
-            newitem.hide()
-            $('.selectionBar .goods').prepend(newitem)
-            alert('菜品添加成功')
-            newitem.show('slow')
-          }
-          else {
-            alert(data)
-          }
-        },
-        error: function (jqXHR, status, error) {
-          alert('服务器错误, ' + status + ', ' + error)
-        },
-        complete: function () {
-          $('html').css('cursor', 'default')
+      sendForm('/info/goodschange', $(this).serialize, function (data, status) {
+        if (data == 'true') {
+          var newitem = $(getunitgoods(nprice, nname))
+          newitem.hide()
+          $('.selectionBar .goods').prepend(newitem)
+          alert('菜品添加成功')
+          newitem.show('slow', function () {
+            if (goodsw == 0) {
+              goodsw = setwidth('.unit.unitgoods > div', 15)
+            } else {
+              newitem.children('div').css('width', goodsw)
+            }
+          })
+        }
+        else {
+          alert(data)
         }
       })
     })
@@ -432,9 +236,9 @@
 
 {% block content %}
 <div class="selectionBar">
-  <div class="title">
+  <h4 class="title">
     菜品目录
-  </div>
+  </h4>
   <div class="goods">
     {% for value in g.goods %}
     <div class="unitgoods unit">
@@ -503,7 +307,7 @@
 
       <div class="info">
         <p>新店铺地址(留空则不修改)</p>
-        <input type="text" name="address" placeholder="您希望的配送地址">
+        <input type="text" name="address" placeholder="新的店铺地址">
       </div>
 
       <button id="formbutton">
@@ -571,9 +375,10 @@
 
 {% endblock %}
 
-
-{% block head %}
+<!--
 <img src="/res/portrait.png">
 <p id="username">{{ g.username }}, <span>欢迎光临</span></p>
+-->
+{% block head %}
 <p id="setting"><span id="addgoods">添加菜品</span><span id="change">修改信息</span><span id="logout">登出 </span> </p>
 {% endblock %}

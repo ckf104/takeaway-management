@@ -1,59 +1,10 @@
 {% extends "base.html" %}
 
 {% block style %}
+{{ super() }}
 <style>
-  * {
-    margin: 0px;
-    padding: 0px;
-  }
-
-  html {
-    height: 100%;
-  }
-
-  body {
-    margin: 0px;
-    padding: 0px;
-    height: 100%;
-    background-color: #dfe0da;
-  }
-
-  .head {
-    display: flex;
-    flex-direction: row;
-    border-bottom: 2px solid;
-    padding-top: 5px;
-    padding-left: 5px;
-    padding-bottom: 5px;
-    background: linear-gradient(90deg, #dfe0da, #595a57);
-  }
-
-  .head img {
-    border-radius: 50%;
-    width: 50px;
-    height: auto;
-  }
-
-  .middle {
-    height: 80%;
-    width: 100%;
-    /*scrollbar-color: rebeccapurple green;*/
-  }
-
-  div.title {
-    padding-left: 10%;
-    padding-bottom: 20px;
-    font-size: 1.8rem;
-  }
-
   div>div>* {
     padding-bottom: 3px;
-  }
-
-  .unit {
-    flex-direction: row;
-    display: flex;
-    margin-bottom: 10px;
   }
 
   .unit.unitcart>div {
@@ -82,21 +33,6 @@
   .unit button {
     margin-top: 20px;
     margin-bottom: 20px;
-  }
-
-  .middle {
-    flex-direction: row;
-    display: flex;
-  }
-
-  .bottom {
-    padding-top: 10px;
-    text-align: center;
-    font-size: 2rem;
-  }
-
-  .source {
-    padding-left: 40%;
   }
 
   .selectionBar {
@@ -144,57 +80,14 @@
     height: 70%;
   }
 
+  .unit.unitcart>div {
+    overflow-x: auto;
+    width: 150px;
+  }
+
   .orders {
     flex-grow: 0;
     overflow: scroll;
-  }
-
-  .missing {
-    display: none;
-  }
-
-  .info {
-    font-size: 1.1rem;
-    padding-left: 18%;
-    margin-bottom: 20px;
-  }
-
-  .fixed {
-    width: 100%;
-    height: 100%;
-    top: 0%;
-    left: 0%;
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1;
-  }
-
-  .close {
-    position: absolute;
-    top: 0%;
-    right: 0%;
-    transform: translate(-10px, 3px);
-  }
-
-  .close:hover {
-    cursor: pointer;
-  }
-
-  .close::before,
-  .close::after {
-    content: '';
-    display: inline-block;
-    background-color: red;
-    width: 1px;
-    height: 20px;
-  }
-
-  .close::before {
-    transform: rotate(45deg);
-  }
-
-  .close::after {
-    transform: rotate(-45deg);
   }
 
   .inputs>h4 {
@@ -213,31 +106,6 @@
     margin-left: 40%;
   }
 
-  div.inputs {
-    position: absolute;
-    width: 20%;
-    height: auto;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    border: 2px solid;
-    border-radius: 5px;
-    background: linear-gradient(120deg, #dfe0da, #595a57);
-  }
-
-  p#username {
-    padding-top: 15px;
-    padding-left: 15px;
-  }
-
-  span#change {
-    padding-right: 10px;
-  }
-
-  #setting span:hover {
-    cursor: pointer;
-  }
-
   #default {
     text-align: center;
     padding-top: 49%;
@@ -246,12 +114,6 @@
 
   #submit {
     float: right;
-  }
-
-  #setting {
-    padding-top: 15px;
-    text-align: right;
-    flex-grow: 1;
   }
 
   p#one {
@@ -273,6 +135,7 @@
 {% endblock %}
 
 {% block script %}
+{{ super() }}
 <script>
   Array.max = function (array) {
     return Math.max.apply(Math, array);
@@ -282,11 +145,7 @@
   var total_price = 0  // TODO
 
   $(function () {
-    w = Math.max(...$('.unit.unitgoods > div').
-      map(function () {
-        return $(this).width()
-      })) + 15
-    $('.unit.unitgoods>div').css('width', w)
+    setwidth('.unit.unitgoods > div', 15)
     //$('#default').css('width', w)
 
     //console.log($('.unit.unitgoods > div').width())
@@ -325,8 +184,6 @@
           '</div>')
         cartlist.set(storename + '-' + goodsname, cart.children('div:last-child'))
         $('#default').addClass('missing')
-
-        $('.unit.unitcart>div').css('width', w)
       }
     })
     $('.cart__').click(function (e) {
@@ -377,28 +234,12 @@
           'price': price,
         })
       })
-
-      $.ajax({
-        type: 'POST',
-        contentType: 'application/json',
-        url: '/info/orders',
-        data: JSON.stringify(dataarr),
-        success: function (data, status) {
-          if (data == 'true' && status == 'success') {
-            alert('订单提交成功')
-            window.location.reload()
-          } else if (status != 'success') {
-            alert('与服务器连接发生错误')
-          }
-          else {
-            alert(data)
-          }
-        },
-        error: function (jqXHR, status, error) {
-          alert('服务器错误, ' + status + ', ' + error)
-        },
-        complete: function () {
-          $('html').css('cursor', 'default')
+      sendJson('/info/orders', JSON.stringify(dataarr), function (data, status) {
+        if (data == 'true') {
+          alert('订单提交成功')
+          window.location.reload()
+        } else {
+          alert(data)
         }
       })
     })
@@ -420,25 +261,14 @@
       $('html').css('cursor', 'progress')
       l.attr("disabled", "disabled")
 
-      $.ajax({
-        type: 'POST',
-        url: '/info/changesetting',
-        data: $(this).serialize(),
-        success: function (data, status) {
-          if (data == 'true' && status == 'success') {
-            alert('信息修改成功')
-          } else if (status != 'success') {
-            alert('与服务器连接发生错误')
-          }
-          else {
-            alert(data)
-          }
-        },
-        error: function (jqXHR, status, error) {
-          alert('服务器错误, ' + status + ', ' + error)
-        },
-        complete: function () {
-          $('html').css('cursor', 'default')
+      sendForm('/info/changesetting', $(this).serialize(), function (data, status) {
+        if (data == 'true' && status == 'success') {
+          alert('信息修改成功')
+        } else if (status != 'success') {
+          alert('与服务器连接发生错误')
+        }
+        else {
+          alert(data)
         }
       })
       $(this).find("input").prop("disabled", false);
@@ -455,25 +285,12 @@
         formdata.append('previous', '5')
         formdata.append('next', '6')
       }
-      $.ajax({
-        type: 'POST',
-        url: '/info/orderchange',
-        processData: false,
-        contentType: false,
-        data: formdata,
-        success: function (data, status) {
-          if (data == 'true' && status == 'success') {
-            order.hide('slow', function () { $(this).remove() })
-          }
-          else {
-            alert(data)
-          }
-        },
-        error: function (jqXHR, status, error) {
-          alert('服务器错误, ' + status + ', ' + error)
-        },
-        complete: function () {
-          $('html').css('cursor', 'default')
+      sendCustomForm('/info/orderchange', formdata, function (data, status) {
+        if (data == 'true' && status == 'success') {
+          order.hide('slow', function () { $(this).remove() })
+        }
+        else {
+          alert(data)
         }
       })
     })
@@ -485,9 +302,9 @@
 
 {% block content %}
 <div class="selectionBar">
-  <div class="title">
+  <h4 class="title">
     菜品目录
-  </div>
+  </h4>
   <div class="goods">
     {% for value in g.goods %}
     <div class="unitgoods unit">

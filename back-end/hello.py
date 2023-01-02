@@ -9,10 +9,10 @@ import sqlite3
 
 goods = namedtuple('goods', ['storename', 'goodsname', 'price', 'sellcount'])
 order = namedtuple('order', ['id', 'storename',
-                   'goodsname', 'number', 'price', 'status', 'address'])
+                   'goodsname', 'number', 'price', 'status', 'address', 'useraddr'])
 allgoods = [goods(f'store{i + 1}', f'goods{i}', f'{i}', f'{i*10}')
             for i in range(1, 31)]
-allorders = [order(f'0x1234597ff{i}', 'store1', 'goods', '2', '30', str(random.randint(0, 6)), '11111hao')
+allorders = [order(f'0x1234597ff{i}', 'store1', 'goods', '2', '30', str(random.randint(0, 6)), '11111hao', '2222qqq')
              for i in range(1, 31)]
 
 app = Flask(__name__)
@@ -55,6 +55,16 @@ def tradesman():
     g.username = session['username']
     g.goods = allgoods
     g.orders = allorders
+    return flask.render_template(target)
+
+
+@bp.route('/rider.html')
+def rider():
+    target = 'rider.html'
+    g.username = session['username']
+    g.waitingOrders = [allorders[i]
+                       for i in range(len(allorders)) if i % 2 == 0]
+    g.accOrders = [allorders[i] for i in range(len(allorders)) if i % 2 != 0]
     return flask.render_template(target)
 
 

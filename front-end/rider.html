@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block style %}
+{{ super() }}
+
+<style>
+  .waitingOrdersBar {
+    overflow: scroll;
+    width: 50%;
+  }
+
+  .accOrdersBar {
+    overflow: scroll;
+    width: 50%;
+  }
+
+  .unit {
+    margin-left: 15px;
+  }
+
+  .unit>div {
+    overflow-x: auto;
+  }
+
+  .buttons {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 20px;
+  }
+</style>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+  function ctorAccOrder(str) {
+    return `<div class="unitaccorder unit"> 
+      <div>${str}</div>
+      <button class="buttons">订单送达 </button>
+      </div>`
+  }
+
+  $(function () {
+    setwidth('.unitwaitorder > div:first-child', 15)
+    var accw = setwidth('.unitaccorder > div:first-child', 25)
+    $('.waitingorders').click(function (e) {
+      var but = $(e.target)
+      if (!but.hasClass('buttons')) {
+        return
+      }
+      var ord = but.prev().find('span.orderid').html()
+      var orderinfo = but.prev()
+      var accorders = $('.accorders')
+      var formdata = new FormData()
+      formdata.append('previous', '3')
+      formdata.append('next', '4')
+      formdata.append('id', ord)
+      sendCustomForm('/info/orderchange', formdata, function (data, status) {
+        if (data == 'true') {
+          var newaccorder = $(ctorAccOrder(orderinfo.html()))
+          newaccorder.hide()
+          $('.accorders').prepend(newaccorder)
+          newaccorder.show('slow', function () {
+            if (accw == 0) {
+              accw = setwidth('.unitaccorder > div:first-child', 25)
+            } else {
+              newaccorder.find('div:first-child').css('width', accw)
+            }
+          })
+          orderinfo.parent().hide("slow", function () { $(this).remove(); })
+        } else {
+          alert(data)
+        }
+      })
+    })
+    $('.accorders').click(function (e) {
+      var but = $(e.target)
+      if (!but.hasClass('buttons')) {
+        return
+      }
+      var ord = but.prev().find('span.orderid').html()
+      var unitorder = but.parent()
+      var formdata = new FormData()
+      formdata.append('previous', 4)
+      formdata.append('next', 5)
+      formdata.append('id', ord)
+      sendCustomForm('/info/orderchange', formdata, function (data, status) {
+        if (data == 'true') {
+          unitorder.hide('slow', function () { $(this).remove() })
+        } else {
+          alert(data)
+        }
+      })
+    })
+  })
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="waitingOrdersBar">
+  <div class="title">
+    可接受订单
+  </div>
+  <div class="waitingorders">
+    {% for value in g.waitingOrders %}
+    <div class="unitwaitorder unit">
+      <div>
+        <h4>订单编号: <span class="orderid">{{ value['id'] }}</span></h4>
+        <p>店铺名: {{ value['storename'] }}, 地址: {{ value['address'] }}</p>
+        <p>商品名: {{ value['goodsname'] }}, 数量 {{ value['number'] }}</p>
+        <p>配送地址: {{ value['useraddr'] }}</p>
+      </div>
+      <button class="buttons">抢单</button>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<div class="accOrdersBar">
+  <div class="title">
+    配送中订单
+  </div>
+  <div class="accorders">
+    {% for value in g.accOrders %}
+    <div class="unitaccorder unit">
+      <div>
+        <h4>订单编号: <span class="orderid">{{ value['id'] }}</span></h4>
+        <p>店铺名: {{ value['storename'] }}, 地址: {{ value['address'] }}</p>
+        <p>商品名: {{ value['goodsname'] }}, 数量 {{ value['number'] }}</p>
+        <p>配送地址: {{ value['useraddr'] }}</p>
+      </div>
+      <button class="buttons">订单送达 </button>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra %}
+{% endblock %}
+
+{% block head %}
+<p id="setting"><span id="logout">登出 </span> </p>
+{% endblock %}
