@@ -104,6 +104,7 @@ def auth_login():
         else :
             return 'true'
 
+
 @bp.route('/auth/signup',methods=['POST'])
 def signup():
     database = db.get_db()
