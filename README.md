@@ -154,3 +154,7 @@ information needed by jinja template:
    * `g.username`存储了商店名称
    * `g.goods`是一个python列表（可使用for循环迭代即可），每个元素表示了该商店的一个菜品，具有`goodsname`, `price`, `sellcount`属性（可使用中括号语法[]或者 . 语法获取其值即可） ，其值分别表示商品名，价格，月售出份数，类型都是字符串。
    * `g.orders`是一个python列表（可使用for循环迭代即可），每个元素具有`id`, `goodsname`, `price`, `number`, `address`属性（可使用中括号语法[]或者 . 语法获取其值即可），表示该商家未确认的订单（订单状态0），其值分别表示订单编号，商品名，总单价，商品数量，配送地址。
+3. `rider.html`
+   * `g.username` stores username of rider
+   * `g.waitingOrders` is a iterable object, each element of which has `id`, `storename`, `address`, `goodsname`, `number`, `useraddr` attributes. `g.waitingOrders` contains all orders waiting for riders to deliver
+   * `g.accOrders` is a iterable object, each element of which has `id`, `storename`, `address`, `goodsname`, `number`, `useraddr` attributes. `g.accOrders` contains all orders this rider is delivering
