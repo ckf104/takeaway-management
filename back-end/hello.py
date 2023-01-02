@@ -5,6 +5,7 @@ import functools
 import random
 import os
 import flask
+import sqlite3
 
 goods = namedtuple('goods', ['storename', 'goodsname', 'price', 'sellcount'])
 order = namedtuple('order', ['id', 'storename',
@@ -17,6 +18,11 @@ allorders = [order(f'0x1234597ff{i}', 'store1', 'goods', '2', '30', str(random.r
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'd67e5a09-05b8-44e8-804f-90f2e84a4552'
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['DATABASE'] = 'database.db'
+
+import db
+app.teardown_appcontext(db.close_db)
+app.cli.add_command(db.init_db_command)
 
 bp = flask.Blueprint('m', __name__, url_prefix='', static_url_path='/',
                      static_folder='/',
@@ -72,13 +78,80 @@ def auth_login():
     identity = request.form['identity']
     name = request.form['name']
     password = request.form['password']
-    if identity == 'customer' or identity == 'tradesman' and name == 'ckf104' and password == '123456789':
-        session['username'] = name
-        session['identity'] = identity
-        return 'true'
-    else:
-        return 'false'
+       
+    if identity not in ['customer', 'tradesman', 'rider'] :
+        return 'identity must be customer, tradesman or rider'
+    else :
+        database = db.get_db()
+        user = database.execute(
+            f'SELECT * FROM {identity} WHERE name = ?', (name,)
+        ).fetchone()
+        
+        if user is None :
+            return 'Incorrect name'
+        elif user['password'] != password :
+            return 'Incorrect password'
+        else :
+            return 'true'
 
+@bp.route('/auth/signup',methods=['POST'])
+def signup():
+    database = db.get_db()
+    
+    identity = request.form['identity']
+    name = request.form['name']
+    password = request.form['password']
+    telephone = request.form['telephone']
+    address = request.form['address']
+    
+    if identity == 'customer' :
+        birthday = request.form['birthday']
+        gender = request.form['gender']
+        realname = request.form['realname']
+        id = request.form['id']
+        
+        try :
+            database.execute(
+                'INSERT INTO customer VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                (name, password, telephone, birthday, gender, realname, id, address),
+            )
+            database.commit()
+            return 'true'
+        except sqlite3.Error as er :
+            response = ' '.join(er.args)
+            return response
+        
+    elif identity == 'tradesman' :
+        storename = request.form['storename']
+        
+        try:
+            database.execute(
+                'INSERT INTO tradesman VALUES (?, ?, ?, ?, ?)',
+                (name, password, telephone, address, storename),      
+            )
+            database.commit()
+            return 'true'
+        except sqlite3.Error as er :
+            response = ' '.join(er.args)
+            return response
+    
+    elif identity == 'rider' :
+        realname = request.form['realname']
+        id = request.form['id']
+        
+        try:
+            database.execute(
+                'INSERT INTO rider VALUES (?, ?, ?, ?, ?, ?)',
+                (name, password, telephone, realname, id, address),
+            )
+            database.commit()
+            return 'true'
+        except sqlite3.Error as er :
+            response = ' '.join(er.args)
+            return response
+        
+            
+    
 
 @bp.route('/auth/logout', methods=['POST'])
 def logout():
