@@ -85,14 +85,15 @@ def login():
 @bp.route('/auth/login', methods=['POST'])
 def auth_login():
     session.clear()
-    identity = request.form['identity']
-    name = request.form['name']
+    session['identity'] = identity = request.form['identity']
+    session['username'] = name = request.form['name']
     password = request.form['password']
        
     if identity not in ['customer', 'tradesman', 'rider'] :
         return 'identity must be customer, tradesman or rider'
     else :
         database = db.get_db()
+        
         user = database.execute(
             f'SELECT * FROM {identity} WHERE name = ?', (name,)
         ).fetchone()
@@ -102,6 +103,8 @@ def auth_login():
         elif user['password'] != password :
             return 'Incorrect password'
         else :
+            if identity == 'tradesman' :
+                session['storename'] = user['storename']
             return 'true'
 
 
@@ -128,9 +131,8 @@ def signup():
             )
             database.commit()
             return 'true'
-        except sqlite3.Error as er :
-            response = ' '.join(er.args)
-            return response
+        except :
+            return 'username has already been registered'
         
     elif identity == 'tradesman' :
         storename = request.form['storename']
@@ -142,9 +144,8 @@ def signup():
             )
             database.commit()
             return 'true'
-        except sqlite3.Error as er :
-            response = ' '.join(er.args)
-            return response
+        except :
+            return 'username has already been registered'
     
     elif identity == 'rider' :
         realname = request.form['realname']
@@ -157,13 +158,10 @@ def signup():
             )
             database.commit()
             return 'true'
-        except sqlite3.Error as er :
-            response = ' '.join(er.args)
-            return response
+        except :
+            return 'username has already been registered'
         
             
-    
-
 @bp.route('/auth/logout', methods=['POST'])
 def logout():
     session.clear()
@@ -172,27 +170,129 @@ def logout():
 
 @bp.route('/info/orders', methods=['POST'])
 def receive_orders():
-    print(request.json)
+    database = db.get_db()
+    
+    status = 0
+    customer = session['username']
+    
+    try :
+        database.execute(
+            'INSERT INTO basic_order (status, customer, rider) VALUES (?, ?, NULL)',
+            (status, customer),        
+        )
+        database.commit()
+    except sqlite3.Error as er :
+        response = ' '.join(er.args)
+        return response
+    
+    latest_row = database.execute('SELECT MAX(id) FROM basic_order').fetchone()
+    order_id = latest_row['MAX(id)']
+    detailed_info = request.json
+    for order in detailed_info :
+        try :
+            database.execute(
+                'INSERT INTO detailed_order VALUES (?, ?, ?, ?, ?)',
+                (order_id, order['storename'], order['goodsname'], order['number'], order['price']),
+            )
+            database.commit()
+        except sqlite3.Error as er :
+            response = ' '.join(er.args)
+            return response
+    
     return 'true'
-
 
 @bp.route('/info/orderchange', methods=['POST'])
 def order_change():
-    print(request.form)
-    return 'true'
+    identity = session['identity']
+    name = session['username']
+    id = request.form['id']
+    previous = request.form['previous']
+    next = request.form['next']
+    
+    database = db.get_db()
+    try :
+        if identity != 'rider' :
+            database.execute(
+                'UPDATE basic_order SET status = ? WHERE id = ? AND previous = ?',
+                (next, id, previous),
+            )
+        else :
+            database.execute(
+                'UPDATE basic_order SET status = ?, rider = ? WHERE id = ? AND previous = ?',
+                (next, name, id, previous),
+            )
+        database.commit()
+        return 'true'
+    except sqlite3.Error as er :
+        response = ' '.join(er.args)
+        return response
 
 
 @bp.route('/info/changesetting', methods=['POST'])
 def change_setting():
-    print(request.form)
+    identity = session['identity']
+    old_name = session['username']
+    name = request.form.get('name')
+    
+    database = db.get_db()
+    if name is not None :
+        try :
+            database.execute(f'UPDATE {identity} SET name = ? WHERE name = ?', (name, old_name))
+            database.commit()
+        except :
+            return 'username has already been registered'
+    
+    for column in ['password', 'telephone', 'address'] :
+        new_value = request.form.get(column)
+        if new_value is not None :
+            try :
+                database.execute(f'UPDATE {identity} SET {column} = ?', (new_value,))
+                database.commit()
+            except sqlite3.Error as er :
+                response = ' '.join(er.args)
+                return response
     return 'true'
+        
 
 
 @bp.route('/info/goodschange', methods=['POST'])
 def change_goods():
-    print(request.form)
+    storename = session['storename']
+    prevname = request.form.get('prevname')
+    newname = request.form.get('newname')
+    newprice = request.form.get('newprice')
+    
+    database = db.get_db()
+    if newname is None :
+        try :
+            database.execute(
+                'DELETE FROM goods WHERE storename = ? AND goodsname = ?',
+                (storename, prevname),
+            )
+            database.commit()
+        except :
+            return 'no such goods'
+    elif prevname is None :
+        try :
+            database.execute(
+                'INSERT INTO goods VALUES (?, ?, ?)',
+                (storename, newname, newprice),
+            )
+            database.commit()
+        except sqlite3.Error as er :
+            response = ' '.join(er.args)
+            return response
+    else :
+        try :
+            database.execute(
+                'UPDATE goods SET goodsname = ?, price = ? WHERE storename = ? AND goodsname = ?',
+                (newname, newprice, storename, prevname),
+            )
+            database.commit()
+        except :
+            return 'no such goods'
+    
     return 'true'
-
 
 # teardown functions are called after the context with block exits
 app.register_blueprint(bp)
