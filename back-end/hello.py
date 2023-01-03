@@ -18,7 +18,7 @@ allorders = [order(f'0x1234597ff{i}', 'store1', 'goods', '2', '30', str(random.r
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'd67e5a09-05b8-44e8-804f-90f2e84a4552'
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.config['DATABASE'] = 'database.db'
+app.config['DATABASE'] = f'{os.path.dirname(__file__)}/database.db'
 
 import db
 app.teardown_appcontext(db.close_db)
@@ -85,8 +85,8 @@ def login():
 @bp.route('/auth/login', methods=['POST'])
 def auth_login():
     session.clear()
-    session['identity'] = identity = request.form['identity']
-    session['username'] = name = request.form['name']
+    identity = request.form['identity']
+    name = request.form['name']
     password = request.form['password']
        
     if identity not in ['customer', 'tradesman', 'rider'] :
@@ -103,6 +103,8 @@ def auth_login():
         elif user['password'] != password :
             return 'Incorrect password'
         else :
+            session['identity'] = identity
+            session['username'] = name
             if identity == 'tradesman' :
                 session['storename'] = user['storename']
             return 'true'

@@ -3,3 +3,4 @@ package-lock.json
 package.json
 python_virtual/
 *.db
+__pycache__
