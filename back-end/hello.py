@@ -10,10 +10,7 @@ import sqlite3
 goods = namedtuple('goods', ['storename', 'goodsname', 'price', 'sellcount'])
 order = namedtuple('order', ['id', 'storename',
                    'goodsname', 'number', 'price', 'status', 'address', 'useraddr'])
-allgoods = [goods(f'store{i + 1}', f'goods{i}', f'{i}', f'{i*10}')
-            for i in range(1, 31)]
-allorders = [order(f'0x1234597ff{i}', 'store1', 'goods', '2', '30', str(random.randint(0, 6)), '11111hao', '2222qqq')
-             for i in range(1, 31)]
+rider_order = namedtuple('rider_order', ['id', 'storename', 'goodsname', 'number', 'address', 'useraddr'])
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'd67e5a09-05b8-44e8-804f-90f2e84a4552'
@@ -43,7 +40,42 @@ def checklogin(func):
 @checklogin
 def customer():
     target = 'user.html'
-    g.username = session['username']
+    username = g.username = session['username']
+
+    allgoods = []
+    allorders = []
+    
+    database = db.get_db()
+    goods_fetch = database.execute('SELECT * FROM goods').fetchall()
+    for goods_row in goods_fetch :
+        storename = goods_row['storename']
+        goodsname = goods_row['goodsname']
+        price = goods_row['price']
+        
+        sellcount_fetch = database.execute(
+            'SELECT sum(number) AS sum FROM orders WHERE storename = ? AND goodsname = ?',
+            (storename, goodsname),
+        ).fetchone()
+        sellcount = sellcount_fetch['sum']
+        
+        allgoods.append(goods(storename, goodsname, price, sellcount))
+    
+    order_fetch = database.execute(f'SELECT * FROM orders WHERE customer = {username} AND status != 6').fetchall()
+    for order_row in order_fetch :
+        id = order_row['id']
+        storename = order_row['storename']
+        goodsname = order_row['goodsname']
+        number = order_row['number']
+        price = order_row['price']
+        status = order_row['status']
+        
+        address_fetch = database.execute(f'SELECT address FROM tradesman WHERE storename = {storename}').fetchone()
+        address = address_fetch['address']
+        useraddr_fetch = database.execute(f'SELECT address AS useraddr FROM customer WHERE name = {username}').fetchone()
+        useraddr = useraddr_fetch['useraddr']
+        
+        allorders.append(order(id, storename, goodsname, number, price, status, address, useraddr))
+    
     g.goods = allgoods
     g.orders = allorders
     return flask.render_template(target)
@@ -52,7 +84,43 @@ def customer():
 @bp.route('/tradesman.html')
 def tradesman():
     target = 'tradesman.html'
-    g.username = session['username']
+    username = g.username = session['username']
+    
+    database = db.get_db()
+    storename_fetch = database.execute(f'SELECT storename FROM tradesman WHERE name ={username}').fetchone()
+    storename = storename_fetch['storename']
+    
+    allgoods = []
+    allorders = []
+    
+    goods_fetch = database.execute(f'SELECT * FROM goods WHERE storename = {storename}').fetchall()
+    for goods_row in goods_fetch :
+        goodsname = goods_row['goodsname']
+        price = goods_row['price']
+        
+        sellcount_fetch = database.execute(
+            'SELECT sum(number) AS sum FROM orders WHERE storename = ? AND goodsname = ?',
+            (storename, goodsname),
+        ).fetchone()
+        sellcount = sellcount_fetch['sum']
+        
+        allgoods.append(goods(storename, goodsname, price, sellcount))
+    
+    order_fetch = database.execute(f'SELECT * FROM orders WHERE storename = {storename} AND status = 0').fetchall()
+    for order_row in order_fetch :
+        id = order_row['id']
+        goodsname = order_row['goodsname']
+        number = order_row['number']
+        price = order_row['price']
+        customer = order_row['customer']
+
+        address_fetch = database.execute(f'SELECT address FROM tradesman WHERE storename = {storename}').fetchone()
+        address = address_fetch['address']
+        useraddr_fetch = database.execute(f'SELECT address AS useraddr FROM customer WHERE name = {customer}').fetchone()
+        useraddr = useraddr_fetch['useraddr']
+        
+        allorders.append(order(id, storename, goodsname, number, price, 0, address, useraddr))
+    
     g.goods = allgoods
     g.orders = allorders
     return flask.render_template(target)
@@ -61,10 +129,44 @@ def tradesman():
 @bp.route('/rider.html')
 def rider():
     target = 'rider.html'
-    g.username = session['username']
-    g.waitingOrders = [allorders[i]
-                       for i in range(len(allorders)) if i % 2 == 0]
-    g.accOrders = [allorders[i] for i in range(len(allorders)) if i % 2 != 0]
+    rider = g.username = session['username']
+    
+    allWaitingOrders = []
+    allAccOrders = []
+    
+    database = db.get_db()
+    waitingOrder_fetch = database.execute('SELECT * FROM orders WHERE rider = NULL AND status = 3').fetchall()
+    for waitingOrder_row in waitingOrder_fetch :
+        id = waitingOrder_row['id']
+        storename = waitingOrder_row['storename']
+        goodsname = waitingOrder_row['goodsname']
+        number = waitingOrder_row['number']
+        customer = waitingOrder_row['customer']
+        
+        address_fetch = database.execute(f'SELECT address FROM tradesman WHERE storename = {storename}').fetchone()
+        address = address_fetch['address']
+        useraddr_fetch = database.execute(f'SELECT address AS useraddr FROM customer WHERE name = {customer}').fetchone()
+        useraddr = useraddr_fetch['useraddr']
+        
+        allWaitingOrders.append(rider_order(id, storename, goodsname, number, address, useraddr))
+    
+    accOrder_fetch = database.execute(f'SELECT * FROM orders WHERE rider = {rider} AND status = 4').fetchall()
+    for accOrder_row in accOrder_fetch :
+        id = accOrder_row['id']
+        storename = accOrder_row['storename']
+        goodsname = accOrder_row['goodsname']
+        number = accOrder_row['number']
+        customer = accOrder_row['customer']
+        
+        address_fetch = database.execute(f'SELECT address FROM tradesman WHERE storename = {storename}').fetchone()
+        address = address_fetch['address']
+        useraddr_fetch = database.execute(f'SELECT address AS useraddr FROM customer WHERE name = {customer}').fetchone()
+        useraddr = useraddr_fetch['useraddr']
+        
+        allAccOrders.append(rider_order(id, storename, goodsname, number, address, useraddr))
+    
+    g.waitingOrders = allWaitingOrders
+    g.accOrders = allAccOrders
     return flask.render_template(target)
 
 
@@ -175,24 +277,12 @@ def receive_orders():
     status = 0
     customer = session['username']
     
-    try :
-        database.execute(
-            'INSERT INTO basic_order (status, customer, rider) VALUES (?, ?, NULL)',
-            (status, customer),        
-        )
-        database.commit()
-    except sqlite3.Error as er :
-        response = ' '.join(er.args)
-        return response
-    
-    latest_row = database.execute('SELECT MAX(id) FROM basic_order').fetchone()
-    order_id = latest_row['MAX(id)']
-    detailed_info = request.json
-    for order in detailed_info :
+    allorders = request.json
+    for order in allorders :
         try :
             database.execute(
-                'INSERT INTO detailed_order VALUES (?, ?, ?, ?, ?)',
-                (order_id, order['storename'], order['goodsname'], order['number'], order['price']),
+                'INSERT INTO orders (status, customer, rider, storename, goodsname, number, price) VALUES (?, ?, NULL, ?, ?, ?, ?)',
+                (status, customer, order['storename'], order['goodsname'], order['number'], order['price']),
             )
             database.commit()
         except sqlite3.Error as er :
@@ -213,12 +303,12 @@ def order_change():
     try :
         if identity != 'rider' :
             database.execute(
-                'UPDATE basic_order SET status = ? WHERE id = ? AND previous = ?',
+                'UPDATE orders SET status = ? WHERE id = ? AND previous = ?',
                 (next, id, previous),
             )
         else :
             database.execute(
-                'UPDATE basic_order SET status = ?, rider = ? WHERE id = ? AND previous = ?',
+                'UPDATE orders SET status = ?, rider = ? WHERE id = ? AND previous = ?',
                 (next, name, id, previous),
             )
         database.commit()
@@ -264,14 +354,24 @@ def change_goods():
     
     database = db.get_db()
     if newname is None :
-        try :
-            database.execute(
-                'DELETE FROM goods WHERE storename = ? AND goodsname = ?',
-                (storename, prevname),
-            )
-            database.commit()
-        except :
-            return 'no such goods'
+        if newprice is None :
+            try :
+                database.execute(
+                    'DELETE FROM goods WHERE storename = ? AND goodsname = ?',
+                    (storename, prevname),
+                )
+                database.commit()
+            except :
+                return 'no such goods'
+        else :
+            try :
+                database.execute(
+                    'UPDATE goods SET price = ? WHERE storename = ? AND goodsname = ?',
+                    (newprice, storename, prevname),
+                )
+                database.commit()
+            except :
+                return 'no such goods'
     elif prevname is None :
         try :
             database.execute(
@@ -283,14 +383,24 @@ def change_goods():
             response = ' '.join(er.args)
             return response
     else :
-        try :
-            database.execute(
-                'UPDATE goods SET goodsname = ?, price = ? WHERE storename = ? AND goodsname = ?',
-                (newname, newprice, storename, prevname),
-            )
-            database.commit()
-        except :
-            return 'no such goods'
+        if newprice is not None :
+            try :
+                database.execute(
+                    'UPDATE goods SET goodsname = ?, price = ? WHERE storename = ? AND goodsname = ?',
+                    (newname, newprice, storename, prevname),
+                )
+                database.commit()
+            except :
+                return 'no such goods'
+        else :
+            try :
+                database.execute(
+                    'UPDATE goods SET goodsname = ? WHERE storename = ? AND goodsname = ?',
+                    (newname, storename, prevname),
+                )
+                database.commit()
+            except :
+                return 'no such goods'
     
     return 'true'
 
