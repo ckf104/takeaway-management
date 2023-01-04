@@ -187,7 +187,7 @@
       var nprice = $('#goodsaddform #newprice').val()
       $('html').css('cursor', 'progress')
 
-      sendForm('/info/goodschange', $(this).serialize, function (data, status) {
+      sendForm('/info/goodschange', $(this).serialize(), function (data, status) {
         if (data == 'true') {
           var newitem = $(getunitgoods(nprice, nname))
           newitem.hide()
