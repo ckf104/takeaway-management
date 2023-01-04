@@ -60,7 +60,7 @@ def customer():
         
         allgoods.append(goods(storename, goodsname, price, sellcount))
     
-    order_fetch = database.execute(f'SELECT * FROM orders WHERE customer = {username} AND status != 6').fetchall()
+    order_fetch = database.execute('SELECT * FROM orders WHERE customer = ? AND status != 6', (username,)).fetchall()
     for order_row in order_fetch :
         id = order_row['id']
         storename = order_row['storename']
@@ -69,9 +69,9 @@ def customer():
         price = order_row['price']
         status = order_row['status']
         
-        address_fetch = database.execute(f'SELECT address FROM tradesman WHERE storename = {storename}').fetchone()
+        address_fetch = database.execute('SELECT address FROM tradesman WHERE storename = ?', (storename,)).fetchone()
         address = address_fetch['address']
-        useraddr_fetch = database.execute(f'SELECT address AS useraddr FROM customer WHERE name = {username}').fetchone()
+        useraddr_fetch = database.execute('SELECT address AS useraddr FROM customer WHERE name = ?', (username,)).fetchone()
         useraddr = useraddr_fetch['useraddr']
         
         allorders.append(order(id, storename, goodsname, number, price, status, address, useraddr))
@@ -87,13 +87,13 @@ def tradesman():
     username = g.username = session['username']
     
     database = db.get_db()
-    storename_fetch = database.execute(f'SELECT storename FROM tradesman WHERE name ={username}').fetchone()
+    storename_fetch = database.execute('SELECT storename FROM tradesman WHERE name = ?', (username,)).fetchone()
     storename = storename_fetch['storename']
     
     allgoods = []
     allorders = []
     
-    goods_fetch = database.execute(f'SELECT * FROM goods WHERE storename = {storename}').fetchall()
+    goods_fetch = database.execute('SELECT * FROM goods WHERE storename = ?', (storename,)).fetchall()
     for goods_row in goods_fetch :
         goodsname = goods_row['goodsname']
         price = goods_row['price']
@@ -106,7 +106,7 @@ def tradesman():
         
         allgoods.append(goods(storename, goodsname, price, sellcount))
     
-    order_fetch = database.execute(f'SELECT * FROM orders WHERE storename = {storename} AND status = 0').fetchall()
+    order_fetch = database.execute('SELECT * FROM orders WHERE storename = ? AND status = 0', (storename,)).fetchall()
     for order_row in order_fetch :
         id = order_row['id']
         goodsname = order_row['goodsname']
@@ -114,9 +114,9 @@ def tradesman():
         price = order_row['price']
         customer = order_row['customer']
 
-        address_fetch = database.execute(f'SELECT address FROM tradesman WHERE storename = {storename}').fetchone()
+        address_fetch = database.execute('SELECT address FROM tradesman WHERE storename = ?', (storename,)).fetchone()
         address = address_fetch['address']
-        useraddr_fetch = database.execute(f'SELECT address AS useraddr FROM customer WHERE name = {customer}').fetchone()
+        useraddr_fetch = database.execute('SELECT address AS useraddr FROM customer WHERE name = ?', (customer,)).fetchone()
         useraddr = useraddr_fetch['useraddr']
         
         allorders.append(order(id, storename, goodsname, number, price, 0, address, useraddr))
@@ -135,7 +135,7 @@ def rider():
     allAccOrders = []
     
     database = db.get_db()
-    waitingOrder_fetch = database.execute('SELECT * FROM orders WHERE rider = NULL AND status = 3').fetchall()
+    waitingOrder_fetch = database.execute('SELECT * FROM orders WHERE rider IS NULL AND status = 3').fetchall()
     for waitingOrder_row in waitingOrder_fetch :
         id = waitingOrder_row['id']
         storename = waitingOrder_row['storename']
@@ -143,14 +143,14 @@ def rider():
         number = waitingOrder_row['number']
         customer = waitingOrder_row['customer']
         
-        address_fetch = database.execute(f'SELECT address FROM tradesman WHERE storename = {storename}').fetchone()
+        address_fetch = database.execute('SELECT address FROM tradesman WHERE storename = ?', (storename,)).fetchone()
         address = address_fetch['address']
-        useraddr_fetch = database.execute(f'SELECT address AS useraddr FROM customer WHERE name = {customer}').fetchone()
+        useraddr_fetch = database.execute('SELECT address AS useraddr FROM customer WHERE name = ?', (customer,)).fetchone()
         useraddr = useraddr_fetch['useraddr']
         
         allWaitingOrders.append(rider_order(id, storename, goodsname, number, address, useraddr))
     
-    accOrder_fetch = database.execute(f'SELECT * FROM orders WHERE rider = {rider} AND status = 4').fetchall()
+    accOrder_fetch = database.execute('SELECT * FROM orders WHERE rider = ? AND status = 4', (rider,)).fetchall()
     for accOrder_row in accOrder_fetch :
         id = accOrder_row['id']
         storename = accOrder_row['storename']
@@ -158,9 +158,9 @@ def rider():
         number = accOrder_row['number']
         customer = accOrder_row['customer']
         
-        address_fetch = database.execute(f'SELECT address FROM tradesman WHERE storename = {storename}').fetchone()
+        address_fetch = database.execute('SELECT address FROM tradesman WHERE storename = ?', (storename,)).fetchone()
         address = address_fetch['address']
-        useraddr_fetch = database.execute(f'SELECT address AS useraddr FROM customer WHERE name = {customer}').fetchone()
+        useraddr_fetch = database.execute('SELECT address AS useraddr FROM customer WHERE name = ?', (customer,)).fetchone()
         useraddr = useraddr_fetch['useraddr']
         
         allAccOrders.append(rider_order(id, storename, goodsname, number, address, useraddr))
@@ -253,12 +253,11 @@ def signup():
     
     elif identity == 'rider' :
         realname = request.form['realname']
-        id = request.form['id']
         
         try:
             database.execute(
-                'INSERT INTO rider VALUES (?, ?, ?, ?, ?, ?)',
-                (name, password, telephone, realname, id, address),
+                'INSERT INTO rider VALUES (?, ?, ?, ?, ?)',
+                (name, password, telephone, realname, address),
             )
             database.commit()
             return 'true'
@@ -305,12 +304,12 @@ def order_change():
     try :
         if identity != 'rider' :
             database.execute(
-                'UPDATE orders SET status = ? WHERE id = ? AND previous = ?',
+                'UPDATE orders SET status = ? WHERE id = ? AND status = ?',
                 (next, id, previous),
             )
         else :
             database.execute(
-                'UPDATE orders SET status = ?, rider = ? WHERE id = ? AND previous = ?',
+                'UPDATE orders SET status = ?, rider = ? WHERE id = ? AND status = ?',
                 (next, name, id, previous),
             )
         database.commit()

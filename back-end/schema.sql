@@ -1,8 +1,9 @@
+DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS customer;
 DROP TABLE IF EXISTS tradesman;
 DROP TABLE IF EXISTS rider;
 DROP TABLE IF EXISTS goods;
-DROP TABLE IF EXISTS orders;
+
 
 CREATE TABLE customer (
     name TEXT PRIMARY KEY NOT NULL,
@@ -28,7 +29,6 @@ CREATE TABLE rider (
     password TEXT NOT NULL,
     telephone TEXT NOT NULL,
     realname TEXT NOT NULL,
-    id TEXT NOT NULL,
     address TEXT NOT NULL
 );
 
@@ -36,8 +36,7 @@ CREATE TABLE goods (
     storename TEXT NOT NULL,
     goodsname TEXT NOT NULL,
     price REAL NOT NULL,
-    PRIMARY KEY(storename, goodsname),
-    FOREIGN KEY (storename) REFERENCES tradesman (storename)
+    PRIMARY KEY(storename, goodsname)
 );
 
 CREATE TABLE orders (
