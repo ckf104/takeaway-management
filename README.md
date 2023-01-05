@@ -165,6 +165,7 @@ interface protocol:
    /info/manager_changeuser
    ```
    * request parameter
+
   | 参数      | 说明                                                         |
    | --------- | ------------------------------------------------------------ |
    | prevusername | required parameter, identify the username of user whose info will be changed |
@@ -187,6 +188,7 @@ interface protocol:
    /info/manager_changeorder
    ```
    * request parameter
+
    | 参数      | 说明                                                         |
    | --------- | ------------------------------------------------------------ |
    | id | required parameter, identify the id of the order whose info will be changed |
@@ -207,8 +209,9 @@ interface protocol:
    /info/manager_changerider
    ```
    * request parameter
+
   | 参数      | 说明                                                         |
-   | --------- | ------------------------------------------------------------ |
+   | --------- | ---------------------------------------------------------   |
    | prevridername | required parameter, identify the ridername of rider whose info will be changed |
    | name      | new ridername(for login), don't change if empty                         |
    | password  | new password, don't change if empty                           |
@@ -226,6 +229,7 @@ interface protocol:
    /info/manager_changerider
    ```
    * request parameter
+   
   | 参数      | 说明                                                         |
    | --------- | ------------------------------------------------------------ |
    | prevstorename | required parameter, identify the store name whose info will be changed |
