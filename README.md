@@ -138,11 +138,106 @@ interface protocol:
    | prevprice | 菜品原价格，可选参数 |
    | newname   | 菜品新名称，可选参数 |
    | newprice  | 菜品新价格，可选参数 |
+   | storename | the name of store, will exist if `identity == manager` |
 
    参数有三种组合可能，仅有`prevname`, `prevprice`，表示删除该菜品。仅有`newname`, `newprice`，表示添加新菜品。包含`prevname`和`prevprice`，`newname`和`newprice`中至少包含一个（不存在的参数表示不修改该项），表示修改原菜名（单价）到新菜名（单价）
 
    * 请求方法：POST
    * 返回值：一个字符串s，如果s=='true'则修改成功，否则s包含修改失败的原因
+
+8. Get goods info of a specific store
+   * url
+   ```
+   /info/goodsinfo
+   ```
+   * request parameter
+   
+   | 参数      | 说明                 |
+   | --------- | --------------------|
+   | storename |  the name of this store |  
+
+   * method: POST
+   * return value: a json string containing a array, each element of which has `goodsname`, `sellcount`, `price` key, and corresponding value of key is obvious by the name of key, or error string if some error occurs.
+
+9. Change user info by manager
+   * url
+   ```
+   /info/manager_changeuser
+   ```
+   * request parameter
+  | 参数      | 说明                                                         |
+   | --------- | ------------------------------------------------------------ |
+   | prevusername | required parameter, identify the username of user whose info will be changed |
+   | name      | new username, don't change if empty                         |
+   | password  | new password, don't change if empty                           |
+   | telephone | new telephone, don't change if empty                                |
+   | birthday  | new user's birthday, don't change if empty |
+   | gender    | new gender, don't change if empty |
+   | realname  | new real name, don't change if empty |
+   | id        | new card id, don't change if empty             |
+   | address   | new delivery address, don't change if empty |
+   
+   * method: POST
+   * notes: if all parameters are empty except `prevusername`, delete this user's info
+   * return value: a string containing `true` if success, otherwise containing error info
+
+10. Change order info by manager
+   * url
+   ```
+   /info/manager_changeorder
+   ```
+   * request parameter
+   | 参数      | 说明                                                         |
+   | --------- | ------------------------------------------------------------ |
+   | id | required parameter, identify the id of the order whose info will be changed |
+   | status      | new order status(a string containing 0-6), don't change if empty                         |
+   | storename  | identify store name which accepts this order, don't change if empty                          |
+   | goodsname | the goodsname that this order purchasing, don't change if empty                             |
+   | number  | the number of purchasing, don't change if empty  |
+   | price   | total price, don't change if empty  |
+   | address  | delivery address, don't change if empty   |
+
+   * method: POST
+   * notes: if all parameters are empty except `id`, delete this order
+   * return value: a string containing `true` if success, otherwise containing error info
+
+11. Change rider info by manager
+   * url
+   ```
+   /info/manager_changerider
+   ```
+   * request parameter
+  | 参数      | 说明                                                         |
+   | --------- | ------------------------------------------------------------ |
+   | prevridername | required parameter, identify the ridername of rider whose info will be changed |
+   | name      | new ridername(for login), don't change if empty                         |
+   | password  | new password, don't change if empty                           |
+   | telephone | new telephone, don't change if empty                                |
+   | realname  | new real name of rider, don't change if empty |
+   | address   | new home address, don't change if empty |
+   
+   * method: POST
+   * notes: if all parameters are empty except `prevridername`, delete this rider
+   * return value: a string containing `true` if success, otherwise containing error info
+
+12. Change store info by manager
+   * url
+   ```
+   /info/manager_changerider
+   ```
+   * request parameter
+  | 参数      | 说明                                                         |
+   | --------- | ------------------------------------------------------------ |
+   | prevstorename | required parameter, identify the store name whose info will be changed |
+   | name      | new login name, don't change if empty                         |
+   | password  | new password, don't change if empty                           |
+   | telephone | new telephone, don't change if empty                                |
+   | storename  | new store name(the name customer will see), don't change if empty |
+   | address   | new address of store, don't change if empty |
+   
+   * method: POST
+   * notes: if all parameters are empty except `prevstorename`, delete this store and all its goods info
+   * return value: a string containing `true` if success, otherwise containing error info
 
 information needed by jinja template:
 
@@ -158,3 +253,9 @@ information needed by jinja template:
    * `g.username` stores username of rider
    * `g.waitingOrders` is a iterable object, each element of which has `id`, `storename`, `address`, `goodsname`, `number`, `useraddr` attributes. `g.waitingOrders` contains all orders waiting for riders to deliver
    * `g.accOrders` is a iterable object, each element of which has `id`, `storename`, `address`, `goodsname`, `number`, `useraddr` attributes. `g.accOrders` contains all orders this rider is delivering
+4. `manager.html`
+   * `g.username`stores the username of manager
+   * `g.users` is a iterable object, each element of which has `username`, `gender`, `birthday`, `realname`, `id`, `address`, `telephone` attributes. `g.users` contains all users signing up
+   * `g.orders` is a iterable object, each element of which has `id`, `status`, `storename`, `goodsname`, `number`, `price`, `address`(delivery address ) attributes. `g.orders` contains all orders that haven't been completed
+   * `g.riders` is a iterable object, each element of which has `ridername`, `address`, `realname`, `telephone` attributes. `g.riders` contains all riders signing up.
+   * `g.stores` is a iterable object, each element of which has `address`, `storename`(the store name customers will see), `telephone` attributes. `g.stores` contains all stores signing up.
