@@ -3,13 +3,611 @@
 {% block style %}
 {{ super() }}
 
+<style>
+  .middle {
+    overflow-x: auto;
+  }
+
+  .unituser.unit .pic {
+    width: 80px;
+  }
+
+  .unit .pic {
+    width: 50px;
+    height: auto;
+  }
+
+  .unit:hover {
+    cursor: pointer;
+  }
+
+  .unit>div {
+    margin-left: 15px;
+  }
+
+  .usersBar {
+    flex-grow: 1;
+    overflow: scroll;
+  }
+
+  .ordersBar {
+    flex-grow: 1;
+    overflow: scroll;
+  }
+
+  .ridersBar {
+    flex-grow: 1;
+    overflow: scroll;
+  }
+
+  .storesBar {
+    flex-grow: 1;
+    overflow: scroll;
+  }
+
+  .goodsBar {
+    flex-grow: 1;
+    overflow: scroll;
+  }
+
+  .board {
+    border-radius: 2px;
+    border: 2px solid rgb(172, 94, 94);
+  }
+
+  button.formbutton {
+    margin-bottom: 10px;
+  }
+
+  button.formbutton.change {
+    margin-left: 20%;
+    margin-right: 20px;
+  }
+
+  .inputs>h4 {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+  }
+
+  .info>label#man {
+    margin-left: 20%;
+    margin-right: 30px;
+  }
+</style>
+
 {% endblock %}
 
 {% block script %}
 {{ super() }}
+<script>
+  var currentunit, currentwindow, currentstore;
 
+  function getGoodsHtml(unitgood) {
+    return `<div class="unitgoods unit">
+      <img class="pic" src="/res/goods.jpg">
+        <div>
+          <h4>商品名:<span id="goodsname">${unitgood['goodsname']}</span></h4>
+          <p>月售${unitgood['sellcount']} </p>
+          <h4>￥<span id="goodsprice">${unitgood['price']}</span></h4>
+        </div>
+    </div>`
+  }
+  function clickWrapper(url, succmsg, fixinputnum, key, valuefunc) {
+    return function (e) {
+      e.preventDefault()
+      var formdata = new FormData($(this).parent().get(0))
+      var myset = new Set()
+      var cnt = 0
+      for (var [k, v] of formdata) {
+        if (!v) {
+          myset.add(k)
+        } else {
+          cnt++
+        }
+      }
+      for (var k of myset) {
+        formdata.delete(k)
+      }
+      if (cnt == fixinputnum) {
+        alert('请至少修改一项信息')
+        return
+      }
+      if (key != undefined) {
+        formdata.append(key, valuefunc())
+      }
+      sendCustomForm(url, formdata, function (data, status) {
+        if (data == 'true') {
+          alert(succmsg)
+          window.location.reload()
+        } else {
+          alert(data)
+        }
+      })
+    }
+  }
+  function deleteWrapper(url, succmsg, key, value) {
+    return function (e) {
+      e.preventDefault()
+      sendForm(url, `${key}=${value()}`, function (data, status) {
+        if (data == 'true') {
+          alert(succmsg)
+          window.location.reload()
+        } else {
+          alert(data)
+        }
+      })
+    }
+  }
+  $(function () {
+    $('.middle').click(function (e) {
+      unit = $(e.target).parents('.unit')
+
+      if (unit.length == 0) {
+        if ($(e.target).hasClass('unit')) {
+          unit = $(e.target)
+        } else {
+          return
+        }
+      }
+      unit.addClass('board')
+      if (currentunit != undefined) {
+        currentunit.removeClass('board')
+      }
+      currentunit = unit
+      if (unit.hasClass('unitstore')) {
+        currentstore = unit.find('#storename').html()
+        sendForm('/info/goodsinfo', `storename=${currentstore}`, function (data, status) {
+          try {
+            goods = JSON.parse(data)
+          } catch (exp) {
+            if (exp instanceof SyntaxError) {
+              alert(data)
+            }
+            else {
+              throw e
+            }
+            return
+          }
+          var goodsbar = $('.goods')
+          goodsbar.empty()
+          for (var idx in goods) {
+            unitgood = goods[idx]
+            var ghtml = $(getGoodsHtml(unitgood))
+            goodsbar.append(ghtml)
+          }
+        })
+      }
+    })
+    $('.close').click(function (e) {
+      if (currentwindow != undefined) {
+        currentwindow.addClass('missing')
+      }
+    })
+    $('.addgoods').click(function (e) {
+      if (currentunit == undefined || !currentunit.hasClass('unitstore')) {
+        alert('请先选中需要添加菜品的店铺')
+        return
+      }
+      currentwindow = $('.goodsaddsetting')
+      currentwindow.removeClass('missing')
+    })
+    $('span#change').click(function (e) {
+      if (currentunit == undefined) {
+        alert('请选择要修改信息的单元')
+        return
+      }
+      if (currentunit.hasClass('unituser')) {
+        currentwindow = $('#usersetting')
+      } else if (currentunit.hasClass('unitorder')) {
+        currentwindow = $('#ordersetting')
+      } else if (currentunit.hasClass('unitrider')) {
+        currentwindow = $('#ridersetting')
+      } else if (currentunit.hasClass('unitstore')) {
+        currentwindow = $('#storesetting')
+      } else if (currentunit.hasClass('unitgoods')) {
+        currentwindow = $('#goodssetting')
+        currentwindow.find('#prevname').val(currentunit.find('#goodsname').html())
+        currentwindow.find('#prevprice').val(currentunit.find('#goodsprice').html())
+      } else {
+        alert('unknown error')
+        return
+      }
+      currentwindow.removeClass('missing')
+    })
+    $('#usersetting .formbutton.change').click(clickWrapper('/info/manager_changeuser',
+      '顾客信息修改成功', 0, 'prevusername', () => currentunit.find('#username').html()))
+    $('#ordersetting .formbutton.change').click(clickWrapper('/info/manager_changeorder',
+      '订单信息修改成功', 0, 'id', () => currentunit.find('span#orderid').html()))
+    $('#ridersetting .formbutton.change').click(clickWrapper('/info/manager_changerider',
+      '骑手信息修改成功', 0, 'prevridername', () => currentunit.find('p#ridername').html()))
+    $('#storesetting .formbutton.change').click(clickWrapper('/info/manager_changestore',
+      '店铺信息修改成功', 0, 'prevstorename', () => currentunit.find('span#storename').html()))
+    $('#goodssetting .formbutton.change').click(clickWrapper('/info/goodschange',
+      '菜品信息修改成功', 2, 'storename', () => currentstore))
+
+    $('#usersetting .formbutton.delete').click(deleteWrapper('/info/manager_changeuser',
+      '顾客删除成功', 'prevusername', () => currentunit.find('#username').html()))
+    $('#ordersetting .formbutton.delete').click(deleteWrapper('/info/manager_changeorder',
+      '订单删除成功', 'id', () => currentunit.find('span#orderid').html()))
+    $('#ridersetting .formbutton.delete').click(deleteWrapper('/info/manager_changerider',
+      '骑手删除成功', 'prevridername', () => currentunit.find('p#ridername').html()))
+    $('#storesetting .formbutton.delete').click(deleteWrapper('/info/manager_changestore',
+      '店铺删除成功', 'prevstorename', () => currentunit.find('span#storename').html()))
+    $('#goodssetting .formbutton.delete').click(function (e) {
+      e.preventDefault()
+      var formdata = new FormData()
+      formdata.append('prevname', currentunit.find('#goodsname').html())
+      formdata.append('prevprice', currentunit.find('#goodsprice').html())
+      formdata.append('storename', currentstore)
+      sendCustomForm('/info/goodschange', formdata, function (data, status) {
+        if (data == 'true') {
+          alert('菜品删除成功')
+          window.location.reload()
+        } else {
+          alert(data)
+        }
+      })
+    })
+  })
+</script>
 {% endblock %}
 
 {% block content %}
+<div class="usersBar">
+  <h4 class="title">
+    用户目录
+  </h4>
+  <div class="users">
+    {% for value in g.users %}
+    <div class="unituser unit">
+      <img class="pic" src="/res/portrait.png">
+      <div>
+        <p style="display: none;" id="username">{{ value['username'] }}</p>
+        {% if value['gender'] == '0' %}
+        <p>姓名: {{ value['realname'] }}, 性别: 女</p>
+        {% elif value['gender'] == '1' %}
+        <p>姓名: {{ value['realname'] }}, 性别: 男</p>
+        {% endif %}
+        <p>联系电话: {{ value['telephone'] }}</p>
+        <p>出生日期: {{ value['birthday'] }}</p>
+        <p>身份证号: {{ value['id'] }}</p>
+        <p>配送地址: {{ value['address'] }}</p>
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+<div class="ordersBar">
+  <h4 class="title">进行中的订单</h4>
+  <div class="orders">
+    {% for value in g.orders %}
+    <div class="unitorder unit">
+      <div>
+        <h4>订单编号: <span id="orderid">{{ value['id'] }}</span> </h4>
+        {% if value['status'] == '0' %}
+        <p id="zero"> 订单状态: <span>商家未确认</span></p>
+        {% elif value['status'] == '1' %}
+        <p id="one" title="点击确认"> 订单状态: <span>订单被商家拒绝</span></p>
+        {% elif value['status'] == '3' %}
+        <p id="three"> 订单状态: <span>商家已接单</span></p>
+        {% elif value['status'] == '4' %}
+        <p id="four"> 订单状态: <span>骑手配送中</span></p>
+        {% elif value['status'] == '5' %}
+        <p id="five" title="点击确认"> 订单状态: <span>外卖已送达</span></p>
+        {% endif %}
+        <p>店铺: {{ value['storename'] }}, 商品: {{ value['goodsname'] }}</p>
+        <p>数量: {{ value['number'] }} ，总价￥{{ value['price'] }} </p>
+        <p>配送地址: {{ value['address'] }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="ridersBar">
+  <h4 class="title">
+    骑手目录
+  </h4>
+  <div class="riders">
+    {% for value in g.riders %}
+    <div class="unitrider unit">
+      <img class="pic" src="/res/portrait.png">
+      <div>
+        <p style="display: none;" id="ridername">{{ value['ridername'] }}</p>
+        <p>姓名: {{ value['realname'] }}</p>
+        <p>联系电话: {{ value['telephone'] }}</p>
+        <p>家庭住址: {{ value['address'] }}</p>
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+<div class="storesBar">
+  <h4 class="title">
+    商店目录
+  </h4>
+  <div class="stores">
+    {% for value in g.stores %}
+    <div class="unitstore unit">
+      <img class="pic" src="/res/portrait.png">
+      <div>
+        <p>店铺名称: <span id="storename">{{ value['storename'] }}</span></p>
+        <p>店铺地址: {{ value['address'] }}</p>
+        <p>联系电话: {{ value['telephone'] }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="goodsBar">
+  <h4 class="title">
+    菜品目录
+  </h4>
+  <div class="goods">
+    {#
+    <!--
+    <div class="unitgoods unit">
+      <img class="goodspic" src="/res/goods.jpg">
+      <div>
+        <h4> <span id="goodsname">{{ value['goodsname'] }}</span> </h4>
+        <p>月售{{value['sellcount'] }} </p>
+        <h4>单价￥<span id="goodsprice">{{ value['price'] }}</span></h4>
+      </div>
+    </div>
+      -->
+    #}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra %}
+<div class="fixed missing" id="usersetting">
+  <div class="inputs">
+    <p class="close"></p>
+    <h4> 顾客信息修改</h4>
+    <form>
+      <div class="info">
+        <p>登录用户名(留空则不修改)</p>
+        <input type="text" name="name" pattern="[(a-zA-Z0-9\u4e00-\u9fa5_#]{3,20}$"
+          placeholder="由中文, 英文, 数字, 下划线, 井号组成, 长度在3-20之间">
+      </div>
+
+      <div class="info">
+        <p>登录密码(留空则不修改)</p>
+        <input type="password" name="password" pattern="[a-zA-Z0-9]{6,20}$" placeholder="由英文, 数字组成, 长度在6到20之间">
+      </div>
+
+      <div class="info">
+        <p>联系电话(留空则不修改)</p>
+        <input type="tel" name="telephone" placeholder="11位电话号码" pattern="[0-9]{11}">
+      </div>
+
+      <div class="info">
+        <p>配送地址(留空则不修改)</p>
+        <input type="text" name="address" placeholder="顾客的配送地址">
+      </div>
+
+      <div class="info">
+        <p>姓名(留空则不修改)</p>
+        <input type="text" name="realname" placeholder="顾客的真实姓名">
+      </div>
+
+      <div class="info">
+        <p>出生日期</p>
+        <input type="date" name="birthday">
+      </div>
+
+      <div class="info">
+        <p>身份证号(留空则不修改)</p>
+        <input type="text" name="id" placeholder="顾客的身份证号">
+      </div>
+
+      <div class="info">
+        <p>性别(留空则不修改)</p>
+        <label id="man">男 <input type="radio" name="gender" value="man"> </label>
+        <label>女 <input type="radio" name="gender" value="woman"></label>
+      </div>
+
+      <button class="formbutton change">
+        修改完成
+      </button>
+      <button class="formbutton delete">
+        删除该用户
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="fixed missing" id="ordersetting">
+  <div class="inputs">
+    <p class="close"></p>
+    <h4> 订单信息修改</h4>
+    <form>
+      <div class="info">
+        <p>订单状态(留空则不修改)</p>
+        <input type="number" name="status" min="0" max="6" placeholder="一个数字a, 0 <= a <= 6">
+      </div>
+
+      <div class="info">
+        <p>店铺(留空则不修改)</p>
+        <input type="text" name="storename" placeholder="接受订单的店铺名">
+      </div>
+
+      <div class="info">
+        <p>商品名(留空则不修改)</p>
+        <input type="text" name="goodsname" placeholder="订单购买的商品名称">
+      </div>
+
+      <div class="info">
+        <p>数量(留空则不修改)</p>
+        <input type="number" name="number" min="1" placeholder="该订单购买的商品数量, >=1">
+      </div>
+
+      <div class="info">
+        <p>价格(留空则不修改)</p>
+        <input type="number" name="number" min="1" placeholder="该订单的总价格, >=1">
+      </div>
+
+      <div class="info">
+        <p>配送地址(留空则不修改)</p>
+        <input type="text" name="address" placeholder="该订单外卖的配送地址">
+      </div>
+
+      <button class="formbutton change">
+        修改完成
+      </button>
+      <button class="formbutton delete">
+        删除该订单
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="fixed missing" id="ridersetting">
+  <div class="inputs">
+    <p class="close"></p>
+    <h4> 骑手信息修改</h4>
+    <form>
+      <div class="info">
+        <p>登录用户名(留空则不修改)</p>
+        <input type="text" name="name" pattern="[(a-zA-Z0-9\u4e00-\u9fa5_#]{3,20}$"
+          placeholder="由中文, 英文, 数字, 下划线, 井号组成, 长度在3-20之间">
+      </div>
+
+      <div class="info">
+        <p>登录密码(留空则不修改)</p>
+        <input type="password" name="password" pattern="[a-zA-Z0-9]{6,20}$" placeholder="由英文, 数字组成, 长度在6到20之间">
+      </div>
+
+      <div class="info">
+        <p>姓名(留空则不修改)</p>
+        <input type="text" name="realname" placeholder="骑手的真实姓名">
+      </div>
+
+      <div class="info">
+        <p>联系电话(留空则不修改)</p>
+        <input type="tel" name="telephone" placeholder="11位电话号码" pattern="[0-9]{11}">
+      </div>
+
+      <div class="info">
+        <p>家庭住址(留空则不修改)</p>
+        <input type="text" name="address" placeholder="骑手的家庭住址">
+      </div>
+
+      <button class="formbutton change">
+        修改完成
+      </button>
+      <button class="formbutton delete">
+        删除该骑手
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="fixed missing" id="storesetting">
+  <div class="inputs">
+    <p class="close"></p>
+    <h4>店铺信息修改</h4>
+    <form>
+      <div class="info">
+        <p>登录用户名(留空则不修改)</p>
+        <input type="text" name="name" pattern="[(a-zA-Z0-9\u4e00-\u9fa5_#]{3,20}$"
+          placeholder="由中文, 英文, 数字, 下划线, 井号组成, 长度在3-20之间">
+      </div>
+
+      <div class="info">
+        <p>登录密码(留空则不修改)</p>
+        <input type="password" name="password" pattern="[a-zA-Z0-9]{6,20}$" placeholder="由英文, 数字组成, 长度在6到20之间">
+      </div>
+
+      <div class="info">
+        <p>店铺名称(留空则不修改)</p>
+        <input type="text" name="realname" placeholder="展示给顾客的店铺名称">
+      </div>
+
+      <div class="info">
+        <p>联系电话(留空则不修改)</p>
+        <input type="tel" name="telephone" placeholder="11位电话号码" pattern="[0-9]{11}">
+      </div>
+
+      <div class="info">
+        <p>店铺地址(留空则不修改)</p>
+        <input type="text" name="address" placeholder="店铺的所在地址">
+      </div>
+      <button class="formbutton change">
+        修改完成
+      </button>
+      <button class="formbutton delete">
+        删除该店铺
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="fixed missing" id="goodssetting">
+  <div class="inputs">
+    <p class="close"></p>
+    <h4>菜品信息修改 </h4>
+    <form id="goodsform">
+      <div class="info">
+        <p>原菜品名</p>
+        <input id="prevname" type="text" name="prevname" readonly>
+      </div>
+
+      <div class="info">
+        <p>原价格</p>
+        <input id="prevprice" type="number" name="prevprice" readonly>
+      </div>
+
+      <div class="info">
+        <p>新菜品名(留空则不修改)</p>
+        <input id='newname' type="text" name="newname" placeholder="请输入菜品名称">
+      </div>
+
+      <div class="info">
+        <p>新价格(留空则不修改)</p>
+        <input id="newprice" type="number" name="newprice" placeholder="请输入一个数字">
+      </div>
+
+      <button class="formbutton change">
+        修改完成
+      </button>
+      <button class="formbutton delete">
+        删除该菜品
+      </button>
+    </form>
+  </div>
+</div>
+
+{#
+<!--
+<div class="fixed missing" id="goodsaddsetting">
+  <div class="inputs">
+    <p class="close"></p>
+    <h4>菜品添加</h4>
+    <form id="goodsaddform">
+      <div class="info">
+        <p>菜品名</p>
+        <input id='newname' type="text" name="newname" placeholder="请输入菜品名称" required>
+      </div>
+      <div class="info">
+        <p>价格</p>
+        <input id="newprice" type="number" name="newprice" placeholder="请输入一个数字" required>
+      </div>
+
+      <button class="formbutton">
+        添加完成
+      </button>
+    </form>
+  </div>
+</div>
+-->
+#}
 
 {% endblock %}

@@ -73,8 +73,8 @@ def customer():
         address = address_fetch['address']
         useraddr_fetch = database.execute('SELECT address AS useraddr FROM customer WHERE name = ?', (username,)).fetchone()
         useraddr = useraddr_fetch['useraddr']
-        
-        allorders.append(order(id, storename, goodsname, number, price, status, address, useraddr))
+
+        allorders.append(order(id, storename, goodsname, number, price, str(status), address, useraddr))
     
     g.goods = allgoods
     g.orders = allorders

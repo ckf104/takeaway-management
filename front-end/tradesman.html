@@ -156,7 +156,6 @@
         alert('请至少修改一项信息')
         return
       }
-      $('html').css('cursor', 'progress')
       l.attr("disabled", "disabled")
 
       sendForm('/info/goodschange', $(this).serialize(), function (data, status) {

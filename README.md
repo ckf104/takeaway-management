@@ -108,7 +108,7 @@ interface protocol:
    * 请求url
 
    ```
-   /info/goodschange
+   /info/orderchange
    ```
 
    * 请求参数
