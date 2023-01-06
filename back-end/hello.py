@@ -11,6 +11,10 @@ goods = namedtuple('goods', ['storename', 'goodsname', 'price', 'sellcount'])
 order = namedtuple('order', ['id', 'storename',
                    'goodsname', 'number', 'price', 'status', 'address', 'useraddr'])
 rider_order = namedtuple('rider_order', ['id', 'storename', 'goodsname', 'number', 'address', 'useraddr'])
+user = namedtuple('user', ['gender', 'realname', 'telephone',
+                  'birthday', 'id', 'address', 'username'])
+rider_tuple = namedtuple('rider', ['realname', 'address', 'telephone', 'ridername'])
+store = namedtuple('store', ['storename', 'telephone', 'address'])
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'd67e5a09-05b8-44e8-804f-90f2e84a4552'
@@ -60,7 +64,7 @@ def customer():
         
         allgoods.append(goods(storename, goodsname, price, sellcount))
     
-    order_fetch = database.execute('SELECT * FROM orders WHERE customer = ? AND status != 6', (username,)).fetchall()
+    order_fetch = database.execute('SELECT * FROM orders WHERE customer = ? AND status != 6 AND status != 2', (username,)).fetchall()
     for order_row in order_fetch :
         id = order_row['id']
         storename = order_row['storename']
@@ -84,11 +88,12 @@ def customer():
 @bp.route('/tradesman.html')
 def tradesman():
     target = 'tradesman.html'
-    username = g.username = session['username']
+    username = session['username']
     
     database = db.get_db()
     storename_fetch = database.execute('SELECT storename FROM tradesman WHERE name = ?', (username,)).fetchone()
     storename = storename_fetch['storename']
+    g.username = storename
     
     allgoods = []
     allorders = []
@@ -169,6 +174,67 @@ def rider():
     g.accOrders = allAccOrders
     return flask.render_template(target)
 
+@bp.route('/manager.html')
+def manager():
+    target = 'manager.html'
+    g.username = session['username']
+    
+    allusers = []
+    allorders = []
+    allriders = []
+    allstores = []
+    
+    database = db.get_db()
+    user_fetch = database.execute('SELECT * FROM customer').fetchall()
+    for user_row in user_fetch :
+        gender = user_row['gender']
+        realname = user_row['realname']
+        telephone = user_row['telephone']
+        birthday = user_row['birthday']
+        id = user_row['id']
+        address = user_row['address']
+        username = user_row['name']
+        
+        allusers.append(user(gender, realname, telephone, birthday, id, address, username))
+    
+    order_fetch = database.execute('SELECT * FROM orders WHERE status != 6 AND status != 2').fetchall()
+    for order_row in order_fetch :
+        id = order_row['id']
+        storename = order_row['storename']
+        goodsname = order_row['goodsname']
+        number = order_row['number']
+        price = order_row['price']
+        status = order_row['status']
+        
+        address_fetch = database.execute('SELECT address FROM tradesman WHERE storename = ?', (storename,)).fetchone()
+        address = address_fetch['address']
+        useraddr_fetch = database.execute('SELECT address AS useraddr FROM customer WHERE name = ?', (username,)).fetchone()
+        useraddr = useraddr_fetch['useraddr']
+        
+        allorders.append(order(id, storename, goodsname, number, price, str(status), address, useraddr))
+    
+    rider_fetch = database.execute('SELECT * FROM rider').fetchall()
+    for rider_row in rider_fetch :
+        realname = rider_row['realname']
+        address = rider_row['address']
+        telephone = rider_row['telephone']
+        ridername = rider_row['name']
+        
+        allriders.append(rider_tuple(realname, address, telephone, ridername))
+    
+    store_fetch = database.execute('SELECT * FROM tradesman').fetchall()
+    for store_row in store_fetch :
+        storename = store_row['storename']
+        telephone = store_row['telephone']
+        address = store_row['address']
+        
+        allstores.append(store(storename, telephone, address))
+    
+    g.users = allusers
+    g.orders = allorders
+    g.riders = allriders
+    g.stores = allstores
+    return flask.render_template(target)
 
 @bp.route('/')
 def default():
@@ -191,8 +257,8 @@ def auth_login():
     name = request.form['name']
     password = request.form['password']
        
-    if identity not in ['customer', 'tradesman', 'rider'] :
-        return 'identity must be customer, tradesman or rider'
+    if identity not in ['customer', 'tradesman', 'rider', 'manager'] :
+        return 'identity must be customer, tradesman, rider or manager'
     else :
         database = db.get_db()
         
@@ -332,12 +398,14 @@ def change_setting():
             database.commit()
         except :
             return 'username has already been registered'
+    else :
+        name = old_name
     
     for column in ['password', 'telephone', 'address'] :
         new_value = request.form.get(column)
         if new_value is not None :
             try :
-                database.execute(f'UPDATE {identity} SET {column} = ?', (new_value,))
+                database.execute(f'UPDATE {identity} SET {column} = ? WHERE name = ?', (new_value, name))
                 database.commit()
             except sqlite3.Error as er :
                 response = ' '.join(er.args)
@@ -402,6 +470,193 @@ def change_goods():
                 database.commit()
             except :
                 return 'no such goods'
+    
+    return 'true'
+
+@bp.route('/info/goodsinfo', methods=['POST'])
+def goodsinfo():
+    storename = request.form['storename']
+    
+    allgoods = []
+    
+    database = db.get_db()
+    goods_fetch = database.execute('SELECT * FROM goods WHERE storename = ?', (storename,)).fetchall()
+    for goods_row in goods_fetch :
+        goodsname = goods_row['goodsname']
+        price = goods_row['price']
+        
+        sellcount_fetch = database.execute(
+            'SELECT sum(number) AS sum FROM orders WHERE storename = ? AND goodsname = ?',
+            (storename, goodsname),
+        ).fetchone()
+        sellcount = sellcount_fetch['sum']
+        
+        allgoods.append(goods(storename, goodsname, price, sellcount))
+        
+    import json
+    s = json.dumps([g._asdict() for g in allgoods])
+    # print(s)
+    return s
+
+@bp.route('/info/manager_changeuser', methods=['POST'])
+def manager_changeuser():
+    database = db.get_db()
+    
+    prevusername = request.form['prevusername']
+    name = request.form.get('name')
+    all_none = True
+    
+    if name is not None :
+        all_none = False
+        try :
+            database.execute('UPDATE customer SET name = ? WHERE name = ?', (name, prevusername))
+            database.commit()
+        except :
+            return 'username has already been registered'
+    else :
+        name = prevusername
+    
+    column_list = ['password', 'telephone', 'birthday', 'gender', 'realname', 'id', 'address']
+    for column in column_list :
+        value = request.form.get(column)
+        if value is not None :
+            all_none = False
+            try :
+                database.execute(
+                    f'UPDATE customer SET {column} = ? WHERE name = ?',
+                    (value, name),
+                )
+                database.commit()
+            except sqlite3.Error as er :
+                response = ' '.join(er.args)
+                return response
+    
+    if all_none :
+        try :
+            database.execute('DELETE FROM customer WHERE name = ?', (name,))
+            database.commit()
+        except sqlite3.Error as er :
+            response = ' '.join(er.args)
+            return response
+    
+    return 'true'
+            
+@bp.route('/info/manager_changeorder', methods=['POST'])
+def manager_changeorder():
+    database = db.get_db()
+    
+    id = request.form['id']
+    all_none = True
+    
+    column_list = ['status', 'storename', 'goodsname', 'number', 'price', 'address']
+    for column in column_list :
+        value = request.form.get(column)
+        if value is not None :
+            all_none = False
+            try :
+                database.execute(
+                    f'UPDATE orders SET {column} = ? WHERE id = ?',
+                    (value, id),
+                )
+                database.commit()
+            except sqlite3.Error as er :
+                response = ' '.join(er.args)
+                return response
+    
+    if all_none :
+        try :
+            database.execute('DELETE FROM orders WHERE id = ?', (id,))
+            database.commit()
+        except sqlite3.Error as er :
+            response = ' '.join(er.args)
+            return response
+    
+    return 'true'
+
+@bp.route('/info/manager_changerider', methods=['POST'])
+def manager_changerider():
+    database = db.get_db()
+    
+    prevridername = request.form['prevridername']
+    name = request.form.get('name')
+    all_none = True
+    
+    if name is not None :
+        all_none = False
+        try :
+            database.execute('UPDATE rider SET name = ? WHERE name = ?', (name, prevridername))
+            database.commit()
+        except :
+            return 'username has already been registered'
+    else :
+        name = prevridername
+    
+    column_list = ['password', 'telephone', 'realname', 'address']
+    for column in column_list :
+        value = request.form.get(column)
+        if value is not None :
+            all_none = False
+            try :
+                database.execute(
+                    f'UPDATE rider SET {column} = ? WHERE name = ?',
+                    (value, name),
+                )
+                database.commit()
+            except sqlite3.Error as er :
+                response = ' '.join(er.args)
+                return response
+    
+    if all_none :
+        try :
+            database.execute('DELETE FROM rider WHERE name = ?', (name,))
+            database.commit()
+        except sqlite3.Error as er :
+            response = ' '.join(er.args)
+            return response
+    return 'true'
+
+@bp.route('/info/manager_changestore', methods=['POST'])
+def manager_changestore():
+    database = db.get_db()
+    
+    prevstorename = request.form['prevstorename']
+    storename = request.form.get('storename')
+    all_none = True
+    
+    if storename is not None :
+        all_none = False
+        try :
+            database.execute('UPDATE tradesman SET storename = ? WHERE storename = ?', (storename, prevstorename))
+            database.commit()
+        except :
+            return 'storename has already been registered'
+    else :
+        storename = prevstorename
+    
+    column_list = ['name', 'password', 'telephone', 'address']
+    for column in column_list :
+        value = request.form.get(column)
+        if value is not None :
+            all_none = False
+            try :
+                database.execute(
+                    f'UPDATE tradesman SET {column} = ? WHERE storename = ?',
+                    (value, storename),
+                )
+                database.commit()
+            except sqlite3.Error as er :
+                response = ' '.join(er.args)
+                return response
+    
+    if all_none :
+        try :
+            database.execute('DELETE FROM tradesman WHERE storename = ?', (storename,))
+            database.commit()
+
+            return f'prevstorename : {prevstorename}, storename : {storename}'
+        except sqlite3.Error as er :
+            response = ' '.join(er.args)
+            return response
     
     return 'true'
 

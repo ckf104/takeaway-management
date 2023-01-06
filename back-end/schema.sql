@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS customer;
 DROP TABLE IF EXISTS tradesman;
 DROP TABLE IF EXISTS rider;
+DROP TABLE IF EXISTS manager;
 DROP TABLE IF EXISTS goods;
 
 
@@ -31,6 +32,13 @@ CREATE TABLE rider (
     realname TEXT NOT NULL,
     address TEXT NOT NULL
 );
+
+CREATE TABLE manager (
+    name TEXT PRIMARY KEY NOT NULL,
+    password TEXT NOT NULL
+);
+
+INSERT INTO manager VALUES ('manager', 'RJrMZQnp1WMk0JWrb4Ak');
 
 CREATE TABLE goods (
     storename TEXT NOT NULL,
