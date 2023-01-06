@@ -315,7 +315,7 @@ def signup():
             database.commit()
             return 'true'
         except :
-            return 'username has already been registered'
+            return 'storename has already been registered'
     
     elif identity == 'rider' :
         realname = request.form['realname']

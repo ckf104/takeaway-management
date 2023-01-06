@@ -18,11 +18,11 @@ CREATE TABLE customer (
 );
 
 CREATE TABLE tradesman (
-    name TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
     password TEXT NOT NULL,
     telephone TEXT NOT NULL,
     address TEXT NOT NULL,
-    storename TEXT NOT NULL
+    storename TEXT PRIMARY KEY NOT NULL
 );
 
 CREATE TABLE rider (
@@ -44,7 +44,8 @@ CREATE TABLE goods (
     storename TEXT NOT NULL,
     goodsname TEXT NOT NULL,
     price REAL NOT NULL,
-    PRIMARY KEY(storename, goodsname)
+    PRIMARY KEY(storename, goodsname),
+    FOREIGN KEY (storename) REFERENCES tradesman (storename) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE orders (
@@ -57,7 +58,7 @@ CREATE TABLE orders (
     goodsname TEXT NOT NULL,
     number INTEGER NOT NULL,
     price REAL NOT NULL,
-    FOREIGN KEY (customer) REFERENCES customer (name),
-    FOREIGN KEY (rider) REFERENCES rider (name),
-    FOREIGN KEY (storename, goodsname) REFERENCES goods (storename, goodsname)
+    FOREIGN KEY (customer) REFERENCES customer (name) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (rider) REFERENCES rider (name) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (storename, goodsname) REFERENCES goods (storename, goodsname) ON DELETE CASCADE ON UPDATE CASCADE
 );
