@@ -652,11 +652,6 @@ def manager_changestore():
         try :
             database.execute('DELETE FROM tradesman WHERE storename = ?', (storename,))
             database.commit()
-<<<<<<< HEAD
-=======
-
-            return f'prevstorename : {prevstorename}, storename : {storename}'
->>>>>>> d32490df96f542aa9a5f76a31c29245528a7122f
         except sqlite3.Error as er :
             response = ' '.join(er.args)
             return response
