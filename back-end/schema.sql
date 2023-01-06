@@ -18,7 +18,7 @@ CREATE TABLE customer (
 );
 
 CREATE TABLE tradesman (
-    name TEXT NOT NULL,
+    name TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     telephone TEXT NOT NULL,
     address TEXT NOT NULL,

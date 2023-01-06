@@ -91,8 +91,7 @@ def tradesman():
     username = session['username']
     
     database = db.get_db()
-    storename_fetch = database.execute('SELECT storename FROM tradesman WHERE name = ?', (username,)).fetchone()
-    storename = storename_fetch['storename']
+    storename = session['storename']
     g.username = storename
     
     allgoods = []
@@ -307,6 +306,10 @@ def signup():
     elif identity == 'tradesman' :
         storename = request.form['storename']
         
+        fetch = database.execute('SELECT * FROM tradesman WHERE name = ?', (name,)).fetchone()
+        if fetch is not None :
+            return 'username has already been registered'
+         
         try:
             database.execute(
                 'INSERT INTO tradesman VALUES (?, ?, ?, ?, ?)',
