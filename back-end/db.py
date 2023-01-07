@@ -15,6 +15,18 @@ def init_db():
     
     with current_app.open_resource("schema.sql") as f :
         db.executescript(f.read().decode('utf8'))
+    
+    from initdata import customer_list, tradesman_list, rider_list, goods_list, order_list
+    db.executemany('INSERT INTO customer VALUES (?, ?, ?, ?, ?, ?, ?, ?)', customer_list)
+    db.executemany('INSERT INTO tradesman VALUES (?, ?, ?, ?, ?)', tradesman_list)
+    db.executemany('INSERT INTO rider VALUES (?, ?, ?, ?, ?)', rider_list)
+    db.executemany('INSERT INTO goods VALUES (?, ?, ?)', goods_list)
+    db.executemany(
+        'INSERT INTO orders (order_time, status, customer, rider, storename, goodsname, number, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        order_list,
+        )
+    db.commit()
+    
 
 @click.command('init-db')
 @with_appcontext

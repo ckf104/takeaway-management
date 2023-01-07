@@ -60,7 +60,10 @@ def customer():
             'SELECT sum(number) AS sum FROM orders WHERE storename = ? AND goodsname = ?',
             (storename, goodsname),
         ).fetchone()
-        sellcount = sellcount_fetch['sum']
+        if sellcount_fetch is not None :
+            sellcount = sellcount_fetch['sum']
+        else :
+            sellcount = 0
         
         allgoods.append(goods(storename, goodsname, price, sellcount))
     
@@ -106,7 +109,10 @@ def tradesman():
             'SELECT sum(number) AS sum FROM orders WHERE storename = ? AND goodsname = ?',
             (storename, goodsname),
         ).fetchone()
-        sellcount = sellcount_fetch['sum']
+        if sellcount_fetch is not None :
+            sellcount = sellcount_fetch['sum']
+        else :
+            sellcount = 0
         
         allgoods.append(goods(storename, goodsname, price, sellcount))
     
@@ -492,7 +498,10 @@ def goodsinfo():
             'SELECT sum(number) AS sum FROM orders WHERE storename = ? AND goodsname = ?',
             (storename, goodsname),
         ).fetchone()
-        sellcount = sellcount_fetch['sum']
+        if sellcount_fetch is not None :
+            sellcount = sellcount_fetch['sum']
+        else :
+            sellcount = 0
         
         allgoods.append(goods(storename, goodsname, price, sellcount))
         

@@ -1,5 +1,0 @@
-customer_list = [1,2,3,4,5]
-tradesman_list = []
-goods_list = []
-rider_list = []
-order_list = []
