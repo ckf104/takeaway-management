@@ -1,7 +1,19 @@
 Source code of a takeaway management platform for homework of the database course.
 
 * front-end: code of html, css, js
-* back-end: code of python flask ?
+* back-end: code of python flask, sqlite
+
+run:
+```shell
+cd back-end/
+export FLASK_APP=hello
+flask init-db
+flask run
+```
+
+query:
+
+run query.py
 
 interface protocol:
 
