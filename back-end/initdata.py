@@ -13,7 +13,7 @@ customer_name_list = ['James', 'Robert', 'John', 'Michael', 'William',
              'Oliver', 'Jack', 'Harry', 'Jacob', 'Charlie',
              'Olivia', 'Isla', 'Emily', 'Poppy', 'Ava']
 
-tradesman_name_list = ['张三', '李四', '王五', '赵六', '孙七']
+tradesman_name_list = ['张小三', '李小四', '王小五', '赵小六', '孙小七']
 storename_list = ['肯德基', '麦当劳', '汉堡王', '德克士', '华莱士']
 
 goodsname_price_list = [('香辣鸡腿堡', 21.5), ('新奥尔良烤鸡腿堡', 22), ('劲脆鸡腿堡', 21.5), ('黄金SPA鸡排堡', 19), ('老北京鸡肉卷', 20),
@@ -27,8 +27,8 @@ goodsname_price_list = [('香辣鸡腿堡', 21.5), ('新奥尔良烤鸡腿堡', 
                         ('辣味鸡肉卷', 15), ('秘制鸡腿堡', 15), ('劲脆鲜虾堡', 15), ('牛气冲天堡', 15), ('深海鳕鱼堡', 15),
                         ('香酥鸡腿', 13), ('甘梅红薯条', 12), ('香芋地瓜丸', 9), ('秘制烤翅', 13), ('黑椒鸡块', 12)]
 
-ridername_list = ['小明', '小红', '小王', '小张', '小李',
-                  '小赵', '小陈', '小唐', '小周', '小孙']
+ridername_list = ['小小明', '小小红', '小小王', '小小张', '小小李',
+                  '小小赵', '小小陈', '小小唐', '小小周', '小小孙']
 
 for pos in range(len(customer_name_list)) :
     customer_name = customer_name_list[pos]
