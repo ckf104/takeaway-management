@@ -35,13 +35,12 @@ def checklogin(func):
     @functools.wraps(func)
     def wrap_func(*args, **keys):
         if not session.get('username'):
-            return flask.redirect(flask.url_for('.login'))
+            return flask.redirect('index.html')
         return func(*args, **keys)
     return wrap_func
 
 
 @bp.route('/user.html')
-@checklogin
 def customer():
     target = 'user.html'
     username = g.username = session['username']
@@ -89,6 +88,7 @@ def customer():
 
 
 @bp.route('/tradesman.html')
+@checklogin
 def tradesman():
     target = 'tradesman.html'
     username = session['username']
@@ -137,6 +137,7 @@ def tradesman():
 
 
 @bp.route('/rider.html')
+@checklogin
 def rider():
     target = 'rider.html'
     rider = g.username = session['username']
@@ -180,6 +181,7 @@ def rider():
     return flask.render_template(target)
 
 @bp.route('/manager.html')
+@checklogin
 def manager():
     target = 'manager.html'
     g.username = session['username']
@@ -424,8 +426,11 @@ def change_setting():
 
 
 @bp.route('/info/goodschange', methods=['POST'])
-def change_goods():
-    storename = session['storename']
+def change_goods():	
+    if session['identity'] == 'tradesman':
+        storename = session['storename']
+    else:
+        storename = request.form.get('storename')
     prevname = request.form.get('prevname')
     newname = request.form.get('newname')
     newprice = request.form.get('newprice')

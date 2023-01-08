@@ -150,10 +150,10 @@
           return
         }
       }
-      unit.addClass('board')
       if (currentunit != undefined) {
         currentunit.removeClass('board')
       }
+      unit.addClass('board')
       currentunit = unit
       if (unit.hasClass('unitstore')) {
         currentstore = unit.find('#storename').html()
@@ -451,7 +451,7 @@
 
       <div class="info">
         <p>价格(留空则不修改)</p>
-        <input type="number" name="number" min="1" placeholder="该订单的总价格, >=1">
+        <input type="number" name="price" min="1" placeholder="该订单的总价格, >=1">
       </div>
 
       <div class="info">
