@@ -4,3 +4,4 @@ package.json
 python_virtual/
 *.db
 back-end/__pycache__/
+小组分工.txt

@@ -4,7 +4,7 @@ Source code of a takeaway management platform for homework of the database cours
 * back-end: code of python flask, sqlite
 
 run:
-```shell
+```sh
 cd back-end/
 export FLASK_APP=hello
 flask init-db
