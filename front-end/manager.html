@@ -150,10 +150,10 @@
           return
         }
       }
-      unit.addClass('board')
       if (currentunit != undefined) {
         currentunit.removeClass('board')
       }
+      unit.addClass('board')
       currentunit = unit
       if (unit.hasClass('unitstore')) {
         currentstore = unit.find('#storename').html()
